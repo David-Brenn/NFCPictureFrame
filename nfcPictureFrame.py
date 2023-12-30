@@ -31,7 +31,7 @@ class NFCPictureFrame:
         self.root.attributes("-fullscreen", True)
         self.root.bind("<Escape>", self.exit_fullscreen)
         self.root.configure(background="black")
-        self.root.configure(highlightthickness=0,highlightcolor="black")
+        self.root.configure(highlightthickness=0,highlightcolor="black",borderwidth=0)
         self.screen_width = self.root.winfo_screenwidth()
         self.screen_height = self.root.winfo_screenheight()
         self.root.geometry(f"{self.screen_width}x{self.screen_height}")
@@ -92,7 +92,7 @@ class NFCPictureFrame:
         image = Image.open(image_path)
         image.thumbnail((self.screen_width, self.screen_height))
         image = ImageTk.PhotoImage(image)
-        self.image_label.configure(image=image)
+        self.image_label.configure(image=image,highlightthickness=0,highlightcolor="black",borderwidth=0)
         self.image_label.image = image
 
 
