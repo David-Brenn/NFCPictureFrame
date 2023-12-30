@@ -5,8 +5,12 @@ import os
 from random import randrange
 
 class NFCPictureFrame:
+    """ 
+    A class to handle the picture frame logic. It contains picking the right image and showing in on a tkinter window
+    """
     #Time a image is shown in seconds
     imageTimer = 0
+    
     #Path to the folder where the images are stored
     rootFolderPath = ""
 
@@ -14,6 +18,8 @@ class NFCPictureFrame:
 
     #Tkinter root window
     root = None
+
+    #TKinter image labe. Set this var to show a image
     image_label = None
 
     #Screen size
@@ -22,10 +28,13 @@ class NFCPictureFrame:
 
     #Queue of images to be shown
     imageQueue = []
+    #Queue of images that have allready be shown
     allReadyShownImages = []
-    #nfcID
+    
+    #place holder of the nfcID
     nfcID = "images"
     def __init__(self,imageTimer,rootFolderPath):
+        #Setup the TK window
         self.root = tk.Tk()
         self.root.title("NFC Picture Frame")
         self.root.attributes("-fullscreen", True)
@@ -36,35 +45,43 @@ class NFCPictureFrame:
         self.screen_height = self.root.winfo_screenheight()
         self.root.geometry(f"{self.screen_width}x{self.screen_height}")
 
-        
+        #Setup the image lable
         self.image_label = tk.Label(self.root)
         self.image_label.configure(highlightthickness=0,highlightcolor="black",borderwidth=0)
         self.image_label.pack(expand=True)
-
+        
         self.imageTimer = imageTimer
 
         if(rootFolderPath == ""):
             rootFolderPath = os.path.dirname(os.path.realpath(__file__))
         self.rootFolderPath = rootFolderPath
 
+        #Fill the queue 
         self.scanForNFCFolder()
         self.scanFolderForImages()
         self.pickImage()
         
 
         self.root.mainloop()
+
     
-    #Scan for a folder with the nfcID as name
     def scanForNFCFolder(self):
+        """
+        A method to find a folder with nfcID as name
+        """
         if (os.path.isdir(self.rootFolderPath+"/" +self.nfcID)):
             self.activeImageFolderPath = self.rootFolderPath+"/" +self.nfcID
             
         print(self.activeImageFolderPath)
-
+        #TODO: Else case if no folder is found. Show error message onscreen
 
     #Scan folder for images and add them to the queue   
     def scanFolderForImages(self):
+        """
+        Scan the activeImageFolder for images add fill the queue
+        """
         file_types = [".jpg",".jpeg",".png"]
+        #TODO: Add if folder exist check. If not print error
         for file in os.listdir(self.activeImageFolderPath):
             if file.endswith(tuple(file_types)):
                 print(file)
@@ -74,6 +91,9 @@ class NFCPictureFrame:
             return
 
     def pickImage(self):
+        """
+        Picks a random image from the ImageQueue and 
+        """
         if(self.imageQueue.__len__()!= 0):
             #Pick random image
             
