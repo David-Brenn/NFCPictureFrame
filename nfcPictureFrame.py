@@ -3,6 +3,9 @@ import tkinter as tk
 from PIL import ImageTk, Image
 import os
 from random import randrange
+import vlc
+import time
+from tkVideoPlayer import TkinterVideo
 
 class NFCPictureFrame:
     """ 
@@ -33,37 +36,81 @@ class NFCPictureFrame:
     
     #place holder of the nfcID
     nfcID = "images"
-    def __init__(self,imageTimer,rootFolderPath):
-        #Setup the TK window
-        self.root = tk.Tk()
-        self.root.title("NFC Picture Frame")
-        self.root.attributes("-fullscreen", True)
-        self.root.bind("<Escape>", self.exit_fullscreen)
-        self.root.configure(background="black")
-        self.root.configure(highlightthickness=0,highlightcolor="black",borderwidth=0)
-        self.screen_width = self.root.winfo_screenwidth()
-        self.screen_height = self.root.winfo_screenheight()
-        self.root.geometry(f"{self.screen_width}x{self.screen_height}")
 
-        #Setup the image lable
-        self.image_label = tk.Label(self.root)
-        self.image_label.configure(highlightthickness=0,highlightcolor="black",borderwidth=0)
-        self.image_label.pack(expand=True)
-        
+    #VLC instance
+    vlcInstance = None
+
+    #Tkinter video player
+    TkVideoPlayer = None
+
+    #Bool to interrupt the image slider
+    interruptImageSlider = False
+
+    #Bool to interrupt the NFC reader
+    interruptNFCReader = False
+
+    def __init__(self,imageTimer,rootFolderPath):
+        #Setup tkinter 
+        self.setupTKWindow()
+        self.setupTKLable()
+     
         self.imageTimer = imageTimer
 
-        if(rootFolderPath == ""):
-            rootFolderPath = os.path.dirname(os.path.realpath(__file__))
-        self.rootFolderPath = rootFolderPath
+        self.setupTKVideoPlayer()
+
+        self.setRootFolderPath(rootFolderPath)  
+
 
         #Fill the queue 
         self.scanForNFCFolder()
         self.scanFolderForImages()
+
+        #Start the NFC loop
+        self.startNFCLoop()
+
+        #Start the image slider
         self.pickImage()
-        
 
         self.root.mainloop()
 
+        
+    def setupTKWindow(self):  
+        """
+        A method to setup the tkinter window
+        """
+        self.root = tk.Tk()
+        self.root.title("NFC Picture Frame")
+        self.root.attributes("-fullscreen", True)
+        self.root.bind("<Escape>", self.exit_fullscreen)
+        self.root.configure(highlightthickness=0,highlightcolor="black",borderwidth=0,background="black")
+        self.screen_width = self.root.winfo_screenwidth()
+        self.screen_height = self.root.winfo_screenheight()
+        self.root.geometry(f"{self.screen_width}x{self.screen_height}")
+
+
+    def setupTKLable(self):
+        """
+        A method to setup the tkinter image lable
+        """
+        self.image_label = tk.Label(self.root,height=self.screen_height,width=self.screen_width,background="black")
+        self.image_label.configure(highlightthickness=0,highlightcolor="black",borderwidth=0)
+        self.image_label.pack(expand=True)
+
+    
+    def setupTKVideoPlayer(self):
+        """
+        A method to setup the tkinter video player
+        """
+        self.TkVideoPlayer = TkinterVideo(master=self.root, scaled=False)
+        self.TkVideoPlayer.configure(background="black")
+
+    def setRootFolderPath(self,rootFolderPath):
+        """
+        A method to set the root folder path.
+        """
+        if(rootFolderPath == ""):
+            rootFolderPath = os.path.dirname(os.path.realpath(__file__))
+        self.rootFolderPath = rootFolderPath
     
     def scanForNFCFolder(self):
         """
@@ -80,7 +127,7 @@ class NFCPictureFrame:
         """
         Scan the activeImageFolder for images add fill the queue
         """
-        file_types = [".jpg",".jpeg",".png"]
+        file_types = [".jpg",".jpeg",".png",".gif",".mp4"]
         #TODO: Add if folder exist check. If not print error
         for file in os.listdir(self.activeImageFolderPath):
             if file.endswith(tuple(file_types)):
@@ -92,20 +139,54 @@ class NFCPictureFrame:
 
     def pickImage(self):
         """
-        Picks a random image from the ImageQueue and 
+        Picks a random image from the ImageQueue and set it to the image label
+        If the image is a video it will be played
         """
-        if(self.imageQueue.__len__()!= 0):
-            #Pick random image
-            
-            pickedSlot = randrange(0,self.imageQueue.__len__()) 
-            pickedImage = self.imageQueue.pop(pickedSlot)
+        if(self.interruptImageSlider):
+            return
+        else:
+            if(self.imageQueue.__len__()!= 0):
+                #Pick random image
+                
+                pickedSlot = randrange(0,self.imageQueue.__len__())
+                pickedImage = self.imageQueue.pop(pickedSlot)
+                print("Picked image: " + pickedImage)
+                self.allReadyShownImages.append(pickedImage)
+                if(pickedImage.endswith(".mp4")):
+                    self.interuptImageSlider = True
+                    self.image_label.pack_forget()
+                    #self.TkVideoPlayer.bind("<<Duration>>",self.videoDurationFound)
+                    self.playVideo(self.activeImageFolderPath+"/"+pickedImage)
+                    print("Current duration: " + str(self.TkVideoPlayer.current_duration()))
+                    self.root.after(20000,self.videoEnded)
+                    return
+                else:
+                    self.showImage(self.activeImageFolderPath+"/"+pickedImage)
 
-            self.showImage(self.activeImageFolderPath+"/"+pickedImage)
-            self.allReadyShownImages.append(pickedImage)
-            self.root.after(self.imageTimer*1000,self.pickImage)
+                self.root.after(self.imageTimer*1000,self.pickImage)
+            else: 
+                print("No more images to show. Restarting queue")
+                self.imageQueue = self.allReadyShownImages
+                self.allReadyShownImages = []
+                self.root.after(1,self.pickImage())
 
     def exit_fullscreen(self,event):
         self.root.attributes("-fullscreen", False)
+
+    def videoDurationFound(self,event):
+        print("Video duration found")
+        videoDuration = int(self.TkVideoPlayer.video_info()["duration"])
+        print(videoDuration)
+        self.root.after(videoDuration+1,self.videoEnded)
+        
+    
+    def videoEnded(self):
+        self.TkVideoPlayer.stop()
+        self.TkVideoPlayer.pack_forget()
+        self.image_label.pack(expand=True)
+        self.interruptImageSlider = False
+        self.root.after(1,self.pickImage)
+        return
 
 
     def showImage(self,image_path):
@@ -116,6 +197,40 @@ class NFCPictureFrame:
         self.image_label.image = image
 
 
+    def playVideo(self,video_path):
+        #Setup the VLC instance
+        #self.image_label.image = ""
+        self.TkVideoPlayer.load(video_path)
+        self.TkVideoPlayer.pack(expand=True, fill="both")
+        self.TkVideoPlayer.play() # play the video
+        #videoplayer.pack_forget()
+        #self.image_label.pack(expand=True)
+
+
+    def NFCLoop(self):
+        """
+        A method to loop the NFC reader and check for new nfc tags. This method is called every second and only stops if a new nfc tag is read and then loads images from the new folder.
+        """
+        if(self.interruptNFCReader):
+            return
+        else:
+        #TODO: Add if ID was read and if it is a new ID)
+            print("NFC loop")
+        #TODO: Add else case if no new ID was read
+        self.root.after(1000,self.NFCLoop)
+
+    def startNFCLoop(self):
+        """
+        A method to start the NFC loop
+        """
+        self.interruptNFCReader = False
+        self.NFCLoop()
+
+    def stopNFCLoop(self):
+        """
+        A method to stop the NFC loop 
+        """
+        self.interruptNFCReader = True
 
 x = NFCPictureFrame(5,"")
 
