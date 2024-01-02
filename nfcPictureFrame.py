@@ -3,9 +3,14 @@ import tkinter as tk
 from PIL import ImageTk, Image
 import os
 from random import randrange
-import vlc
 import time
 from tkVideoPlayer import TkinterVideo
+from vlcVideoPlayer import VlcVideoPlayer
+import sys
+
+_isMacOS   = sys.platform.startswith('darwin')
+_isLinux   = sys.platform.startswith('linux')
+_isWindows = sys.platform.startswith('win')
 
 class NFCPictureFrame:
     """ 
@@ -37,8 +42,8 @@ class NFCPictureFrame:
     #place holder of the nfcID
     nfcID = "images"
 
-    #VLC instance
-    vlcInstance = None
+    vlcMediaPlayer = VlcVideoPlayer()
+    vlcCanvas = None
 
     #Tkinter video player
     TkVideoPlayer = None
@@ -50,6 +55,9 @@ class NFCPictureFrame:
     interruptNFCReader = False
 
     def __init__(self,imageTimer,rootFolderPath):
+        """
+        A method to init the NFCPictureFrame class. It calls all the setup methods and starts the image slider and the NFC reader.
+        """
         #Setup tkinter 
         self.setupTKWindow()
         self.setupTKLable()
@@ -57,6 +65,7 @@ class NFCPictureFrame:
         self.imageTimer = imageTimer
 
         self.setupTKVideoPlayer()
+        self.setupVLCMediaPlayer()
 
         self.setRootFolderPath(rootFolderPath)  
 
@@ -67,7 +76,7 @@ class NFCPictureFrame:
 
         #Start the NFC loop
         self.startNFCLoop()
-
+        #self.testVLCPlayer()
         #Start the image slider
         self.pickImage()
 
@@ -112,6 +121,16 @@ class NFCPictureFrame:
             rootFolderPath = os.path.dirname(os.path.realpath(__file__))
         self.rootFolderPath = rootFolderPath
     
+    def setupVLCMediaPlayer(self):
+        self.vlcCanvas = tk.Canvas(self.root,height=self.screen_height,width=self.screen_width,background="black")
+        self.vlcMediaPlayer.setCanvas(self.vlcCanvas)
+
+    def packVLCPlayer(self):
+        self.vlcCanvas.pack(expand=True,fill="both")
+
+    def unpackVLCPlayer(self):
+        self.vlcCanvas.pack_forget()
+
     def scanForNFCFolder(self):
         """
         A method to find a folder with nfcID as name
@@ -146,23 +165,22 @@ class NFCPictureFrame:
             return
         else:
             if(self.imageQueue.__len__()!= 0):
-                #Pick random image
-                
+                #Pick random image from queue
                 pickedSlot = randrange(0,self.imageQueue.__len__())
                 pickedImage = self.imageQueue.pop(pickedSlot)
                 print("Picked image: " + pickedImage)
+                #Add image to allready shown images
                 self.allReadyShownImages.append(pickedImage)
                 if(pickedImage.endswith(".mp4")):
+                    #To show a video we need to stop the image slider and show the video
                     self.interuptImageSlider = True
-                    self.image_label.pack_forget()
-                    #self.TkVideoPlayer.bind("<<Duration>>",self.videoDurationFound)
+                    self.image_label.pack_forget()                   
                     self.playVideo(self.activeImageFolderPath+"/"+pickedImage)
-                    print("Current duration: " + str(self.TkVideoPlayer.current_duration()))
-                    self.root.after(20000,self.videoEnded)
                     return
                 else:
                     self.showImage(self.activeImageFolderPath+"/"+pickedImage)
 
+                #Call this method again after imageTimer
                 self.root.after(self.imageTimer*1000,self.pickImage)
             else: 
                 print("No more images to show. Restarting queue")
@@ -174,13 +192,19 @@ class NFCPictureFrame:
         self.root.attributes("-fullscreen", False)
 
     def videoDurationFound(self,event):
+        """
+        A method that calls itself every second to check if the video duration is found. If the duration is found it will call the videoEnded method with the duration as parameter.
+        """
         print("Video duration found")
         videoDuration = int(self.TkVideoPlayer.video_info()["duration"])
         print(videoDuration)
         self.root.after(videoDuration+1,self.videoEnded)
         
     
-    def videoEnded(self):
+    def tkVideoEnded(self):
+        """
+        A method to stop the video and show the image label again.
+        """
         self.TkVideoPlayer.stop()
         self.TkVideoPlayer.pack_forget()
         self.image_label.pack(expand=True)
@@ -190,6 +214,9 @@ class NFCPictureFrame:
 
 
     def showImage(self,image_path):
+        """
+        A method to show a image on the image label.
+        """
         image = Image.open(image_path)
         image.thumbnail((self.screen_width, self.screen_height))
         image = ImageTk.PhotoImage(image)
@@ -198,14 +225,53 @@ class NFCPictureFrame:
 
 
     def playVideo(self,video_path):
-        #Setup the VLC instance
-        #self.image_label.image = ""
-        self.TkVideoPlayer.load(video_path)
-        self.TkVideoPlayer.pack(expand=True, fill="both")
-        self.TkVideoPlayer.play() # play the video
-        #videoplayer.pack_forget()
-        #self.image_label.pack(expand=True)
+        """
+        A method to play a video on the video player. On mac it uses the tkinter video player and on other systems it uses the vlc video player.
+        """
+        if _isMacOS:
+            self.TkVideoPlayer.load(video_path)
+            self.TkVideoPlayer.pack(expand=True, fill="both")
+            self.TkVideoPlayer.play()
+            self.root.after(1000,self.tkVideoGetDuration)
+        else:
+            self.packVLCPlayer()
+            self.vlcMediaPlayer.playVideo(video_path)
+            self.root.after(1000,self.vlcGetDuration)
+            
+    
+    def tkVideoGetDuration(self):
+        """
+        A method that calls itself every second until the duration is found. If the duration is found it will call the tkVideoEnded method with the duration as parameter.
+        """
+        videoDuration = int(self.TkVideoPlayer.video_info()["duration"]*1000)
+        print("TK VideoDuration " + str(videoDuration))
+        if(videoDuration == 0):
+            self.root.after(1000,self.tkVideoGetDuration)
+        else:
+            self.root.after(videoDuration,self.tkVideoEnded)
 
+    def vlcGetDuration(self):  
+        """
+        A method that calls itself every second until the duration is found. If the duration is found it will call the vlcVideoEnded method with the duration as parameter.
+        """
+        videoDuration = int(self.vlcMediaPlayer.mediaPlayer.get_length())
+        print("VLC VideoDuration: " + str(videoDuration))
+        if(videoDuration == 0 or videoDuration == -1):
+            self.root.after(1000,self.vlcGetDuration)
+        else:
+            self.root.after(videoDuration,self.vlcVideoEnded)
+
+
+    def vlcVideoEnded(self):
+        """
+        A method to stop the video and show the image label again.
+        """
+        self.vlcMediaPlayer.stopVideo()
+        self.unpackVLCPlayer()
+        self.image_label.pack(expand=True)
+        self.interruptImageSlider = False
+        self.root.after(1,self.pickImage)
+        
 
     def NFCLoop(self):
         """
@@ -231,6 +297,15 @@ class NFCPictureFrame:
         A method to stop the NFC loop 
         """
         self.interruptNFCReader = True
+
+    def testVLCPlayer(self):
+        """
+        A method to test the vlc video player
+        """
+        self.packVLCPlayer()
+        self.vlcMediaPlayer.playVideo(self.rootFolderPath+"/images/video.mp4")
+        
+
 
 x = NFCPictureFrame(5,"")
 
