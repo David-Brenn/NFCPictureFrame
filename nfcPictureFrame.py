@@ -5,7 +5,7 @@ from PIL import ImageTk, Image
 import os
 from random import randrange
 import time
-from tkVideoPlayer import TkinterVideo
+#from tkVideoPlayer import TkinterVideo
 from vlcVideoPlayer import VlcVideoPlayer
 import sys
 from configparser import ConfigParser
@@ -48,7 +48,7 @@ class NFCPictureFrame:
     vlcCanvas = None
 
     #Tkinter video player
-    TkVideoPlayer = None
+    #TkVideoPlayer = None
 
     #Bool to interrupt the image slider
     interruptImageSlider = False
@@ -69,7 +69,7 @@ class NFCPictureFrame:
         self.setupTKWindow()
         self.setupTKLable()
 
-        self.setupTKVideoPlayer()
+        #self.setupTKVideoPlayer()
         self.setupVLCMediaPlayer() 
 
 
@@ -122,13 +122,14 @@ class NFCPictureFrame:
         self.image_label.configure(highlightthickness=0,highlightcolor="black",borderwidth=0)
         self.image_label.pack(expand=True)
 
-    
-    def setupTKVideoPlayer(self):
+
+   # def setupTKVideoPlayer(self):
         """
         A method to setup the tkinter video player
         """
-        self.TkVideoPlayer = TkinterVideo(master=self.root, scaled=False)
-        self.TkVideoPlayer.configure(background="black")
+        #self.TkVideoPlayer = TkinterVideo(master=self.root, scaled=False)
+        #self.TkVideoPlayer.configure(background="black")
+  
 
     def setRootFolderPath(self,rootFolderPath):
         """
@@ -232,16 +233,16 @@ class NFCPictureFrame:
         self.root.after(videoDuration+1,self.videoEnded)
         
     
-    def tkVideoEnded(self):
+    #def tkVideoEnded(self):
         """
         A method to stop the video and show the image label again.
         """
-        self.TkVideoPlayer.stop()
-        self.TkVideoPlayer.pack_forget()
-        self.image_label.pack(expand=True)
-        self.interruptImageSlider = False
-        self.root.after(1,self.pickImage)
-        return
+        #self.TkVideoPlayer.stop()
+        #self.TkVideoPlayer.pack_forget()
+        #self.image_label.pack(expand=True)
+        #self.interruptImageSlider = False
+        #self.root.after(1,self.pickImage)
+        #return
 
 
     def showImage(self,image_path):
@@ -259,27 +260,27 @@ class NFCPictureFrame:
         """
         A method to play a video on the video player. On mac it uses the tkinter video player and on other systems it uses the vlc video player.
         """
-        if _isMacOS:
-            self.TkVideoPlayer.load(video_path)
-            self.TkVideoPlayer.pack(expand=True, fill="both")
-            self.TkVideoPlayer.play()
-            self.root.after(1000,self.tkVideoGetDuration)
-        else:
-            self.packVLCPlayer()
-            self.vlcMediaPlayer.playVideo(video_path)
-            self.root.after(1000,self.vlcGetDuration)
+        #if _isMacOS:
+            #self.TkVideoPlayer.load(video_path)
+            #self.TkVideoPlayer.pack(expand=True, fill="both")
+            #self.TkVideoPlayer.play()
+            #self.root.after(1000,self.tkVideoGetDuration)
+        #else:
+        self.packVLCPlayer()
+        self.vlcMediaPlayer.playVideo(video_path)
+        self.root.after(1000,self.vlcGetDuration)
             
     
-    def tkVideoGetDuration(self):
+    #def tkVideoGetDuration(self):
         """
         A method that calls itself every second until the duration is found. If the duration is found it will call the tkVideoEnded method with the duration as parameter.
         """
-        videoDuration = int(self.TkVideoPlayer.video_info()["duration"]*1000)
-        print("TK VideoDuration " + str(videoDuration))
-        if(videoDuration == 0):
-            self.root.after(1000,self.tkVideoGetDuration)
-        else:
-            self.root.after(videoDuration,self.tkVideoEnded)
+        #videoDuration = int(self.TkVideoPlayer.video_info()["duration"]*1000)
+        #print("TK VideoDuration " + str(videoDuration))
+        #if(videoDuration == 0):
+            #self.root.after(1000,self.tkVideoGetDuration)
+        #else:
+            #self.root.after(videoDuration,self.tkVideoEnded)
 
     def vlcGetDuration(self):  
         """
