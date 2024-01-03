@@ -10,3 +10,5 @@ This project aims to make a nfc digital picture frame. The idear is that souvini
 The Pictures are shown with the help of the python library TKinter while the videos are presented with vlc or omxplayer. The information form the NFC reader is used to get the right image folder. The images of the folder are randomly queued.
 
 If the basic functions works the project can be extendet by a image cloud storage on the Raspberry and a App to controll the Frame. The app should have the function to add a NFC tag to a certain image folder maybe with a image of the souvenier. This information should be stored in a dictornary on the raspberry to compate the tag information with the could folder name.
+
+To store files on the raspberry i use samba. This makes it possible create a shared folder that is public to the network. The folder can be editied via every filesystem by adding a server. For better compabillity with iphone add [this](https://forum.rockstor.com/t/configure-samba-to-work-better-with-apple-devices/8956) configuration to the samba config. 
