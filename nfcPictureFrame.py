@@ -1,5 +1,6 @@
 import cv2
 import tkinter as tk
+from tkinter import filedialog
 from PIL import ImageTk, Image
 import os
 from random import randrange
@@ -7,6 +8,7 @@ import time
 from tkVideoPlayer import TkinterVideo
 from vlcVideoPlayer import VlcVideoPlayer
 import sys
+from configparser import ConfigParser
 
 _isMacOS   = sys.platform.startswith('darwin')
 _isLinux   = sys.platform.startswith('linux')
@@ -54,26 +56,27 @@ class NFCPictureFrame:
     #Bool to interrupt the NFC reader
     interruptNFCReader = False
 
+    configParser = ConfigParser()
+
     def __init__(self,imageTimer,rootFolderPath):
         """
         A method to init the NFCPictureFrame class. It calls all the setup methods and starts the image slider and the NFC reader.
         """
+        #Read config file
+        self.readConfigFile()
+
         #Setup tkinter 
         self.setupTKWindow()
         self.setupTKLable()
-     
-        self.imageTimer = imageTimer
 
         self.setupTKVideoPlayer()
-        self.setupVLCMediaPlayer()
-
-        self.setRootFolderPath(rootFolderPath)  
+        self.setupVLCMediaPlayer() 
 
 
         #Fill the queue 
         self.scanForNFCFolder()
         self.scanFolderForImages()
-
+        
         #Start the NFC loop
         self.startNFCLoop()
         #self.testVLCPlayer()
@@ -82,6 +85,20 @@ class NFCPictureFrame:
 
         self.root.mainloop()
 
+    def readConfigFile(self):
+        """
+        A method to read the config file
+        """
+        self.configParser.read("config.ini")
+        self.imageTimer = self.configParser.getint("Settings","imageTimer")
+        if(self.imageTimer == 0):
+            self.imageTimer = 5
+        self.rootFolderPath = self.configParser.get("Settings","rootFolderPath")
+        self.activeImageFolderPath = self.configParser.get("Settings","rootFolderPath")
+        self.setRootFolderPath(self.configParser.get("Settings","rootFolderPath"))
+
+
+    
         
     def setupTKWindow(self):  
         """
@@ -135,12 +152,26 @@ class NFCPictureFrame:
         """
         A method to find a folder with nfcID as name
         """
+        #TODO: Add folder picker if no root folder is set
+        #Check if the active image folder is set
+        if (self.activeImageFolderPath == ""):
+            #If not set the first folder as active image folder
+            print("No active image folder. The first folder will be used")
+            folders = os.listdir(self.rootFolderPath)
+            if (folders.__len__() == 0):
+                print("No folders found in root folder")
+            else :
+                self.activeImageFolderPath = self.rootFolderPath+"/"+folders[0]
         if (os.path.isdir(self.rootFolderPath+"/" +self.nfcID)):
             self.activeImageFolderPath = self.rootFolderPath+"/" +self.nfcID
             
         print(self.activeImageFolderPath)
         #TODO: Else case if no folder is found. Show error message onscreen
 
+    def pickRootFolder():
+        #TODO: Add a method to pick the root folder
+        pass
+    
     #Scan folder for images and add them to the queue   
     def scanFolderForImages(self):
         """
@@ -305,7 +336,16 @@ class NFCPictureFrame:
         self.packVLCPlayer()
         self.vlcMediaPlayer.playVideo(self.rootFolderPath+"/images/video.mp4")
         
-
+    def writeConfigFile(self):
+        """
+        A method to write the config file
+        """
+        self.configParser.add_section("Settings")
+        self.configParser.set("Settings","imageTimer",str(self.imageTimer))
+        self.configParser.set("Settings","rootFolderPath",self.rootFolderPath)
+        self.configParser.set("Settings","activeImageFolderPath",self.activeImageFolderPath)
+        with open('config.ini', 'w') as configfile:
+            self.configParser.write(configfile)
 
 x = NFCPictureFrame(5,"")
 
