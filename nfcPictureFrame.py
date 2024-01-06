@@ -12,6 +12,7 @@ from configparser import ConfigParser
 from tkinter import messagebox
 from mfrc522 import SimpleMFRC522
 import RPi.GPIO as GPIO
+import threading
 
 _isMacOS   = sys.platform.startswith('darwin')
 _isLinux   = sys.platform.startswith('linux')
@@ -53,6 +54,7 @@ class NFCPictureFrame:
     #place holder of the nfcID
     nfcID = ""
     nfcIDDictinary = {"584184257487":"images","584184388557":"images2"}
+    nfcReaderThread = None
 
     vlcMediaPlayer = VlcVideoPlayer()
     vlcCanvas = None
@@ -85,7 +87,7 @@ class NFCPictureFrame:
 
         
         #Start the NFC loop
-        self.startNFCLoop()
+        self.nfcReaderThread = threading.Thread(self.startNFCLoop(),daemon=True)
         #self.testVLCPlayer()
         #Start the image slider
         self.startImageSlider()
@@ -383,12 +385,14 @@ class NFCPictureFrame:
                 print("No folder found for ID: " + str(nfcId))
                 print("Folder path: " + activeImageFolderPath)
                 print("Starting NFC loop again")
-                self.root.after(1000,self.NFCLoop)
+                time.sleep(1)
+                self.NFCLoop()
 
         else:
             print("No ID found")
             print("Starting NFC loop again")
-            self.root.after(1000,self.NFCLoop)
+            time.sleep(1)
+            self.NFCLoop()
             
 
     def translateIDToFolderName(self,nfcID):
