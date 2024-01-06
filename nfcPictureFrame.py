@@ -52,7 +52,7 @@ class NFCPictureFrame:
     
     #place holder of the nfcID
     nfcID = ""
-    nfcIDDictinary = {}
+    nfcIDDictinary = {"584184257487":"images","584184388557":"images2"}
 
     vlcMediaPlayer = VlcVideoPlayer()
     vlcCanvas = None
