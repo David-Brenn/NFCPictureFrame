@@ -87,12 +87,10 @@ class NFCPictureFrame:
 
         
         #Start the NFC loop
-        self.nfcReaderThread = threading.Thread(self.startNFCLoop(),daemon=True)
+        self.startNFCLoop()
         #self.testVLCPlayer()
         #Start the image slider
         self.startImageSlider()
-        self.testChangeActiveImageFolder(10000,self.rootFolderPath+"/images2")
-        self.testChangeActiveImageFolder(20000,self.rootFolderPath+"/images")
         self.root.mainloop()
 
     def readConfigFile(self):
@@ -199,6 +197,7 @@ class NFCPictureFrame:
         self.vlcCanvas.pack_forget()
         self.activeImageFolderPath = activeImageFolderPath
         self.startImageSlider()
+        self.startNFCLoop()
 
     def checkActiveImageFolder(self):
         if (self.activeImageFolderPath == ""):
@@ -381,6 +380,7 @@ class NFCPictureFrame:
             activeImageFolderPath = self.rootFolderPath+"/"+newFolder
             if(os.path.isdir(activeImageFolderPath)):
                 self.changeActiveImageFolder(activeImageFolderPath)
+                self.stopNFCLoop()
             else:
                 print("No folder found for ID: " + str(nfcId))
                 print("Folder path: " + activeImageFolderPath)
@@ -424,7 +424,7 @@ class NFCPictureFrame:
         A method to start the NFC loop
         """
         self.interruptNFCReader = False
-        self.NFCLoop()
+        self.nfcReaderThread = threading.Thread(self.NFCLoop())
 
     def stopNFCLoop(self):
         """
