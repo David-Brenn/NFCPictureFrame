@@ -9,6 +9,9 @@ import time
 from vlcVideoPlayer import VlcVideoPlayer
 import sys
 from configparser import ConfigParser
+from tkinter import messagebox
+from mfrc522 import SimpleMFRC522
+import RPi.GPIO as GPIO
 
 _isMacOS   = sys.platform.startswith('darwin')
 _isLinux   = sys.platform.startswith('linux')
@@ -29,8 +32,14 @@ class NFCPictureFrame:
     #Tkinter root window
     root = None
 
+    #TKinter active after id
+    pickImageAfterIds = []
+    playVideoAfterIds = []
+
     #TKinter image labe. Set this var to show a image
     image_label = None
+
+
 
     #Screen size
     screen_height = 0
@@ -42,13 +51,15 @@ class NFCPictureFrame:
     allReadyShownImages = []
     
     #place holder of the nfcID
-    nfcID = "images"
+    nfcID = ""
+    nfcIDDictinary = {}
 
     vlcMediaPlayer = VlcVideoPlayer()
     vlcCanvas = None
 
     #Tkinter video player
     #TkVideoPlayer = None
+    
 
     #Bool to interrupt the image slider
     interruptImageSlider = False
@@ -72,17 +83,14 @@ class NFCPictureFrame:
         #self.setupTKVideoPlayer()
         self.setupVLCMediaPlayer() 
 
-
-        #Fill the queue 
-        self.scanForNFCFolder()
-        self.scanFolderForImages()
         
         #Start the NFC loop
         self.startNFCLoop()
         #self.testVLCPlayer()
         #Start the image slider
-        self.pickImage()
-
+        self.startImageSlider()
+        self.testChangeActiveImageFolder(10000,self.rootFolderPath+"/images2")
+        self.testChangeActiveImageFolder(20000,self.rootFolderPath+"/images")
         self.root.mainloop()
 
     def readConfigFile(self):
@@ -94,8 +102,9 @@ class NFCPictureFrame:
         if(self.imageTimer == 0):
             self.imageTimer = 5
         self.rootFolderPath = self.configParser.get("Settings","rootFolderPath")
-        self.activeImageFolderPath = self.configParser.get("Settings","rootFolderPath")
-        self.setRootFolderPath(self.configParser.get("Settings","rootFolderPath"))
+        self.activeImageFolderPath = self.configParser.get("Settings","activeImageFolderPath")
+        self.checkRootFolder()
+        
 
 
     
@@ -120,7 +129,7 @@ class NFCPictureFrame:
         """
         self.image_label = tk.Label(self.root,height=self.screen_height,width=self.screen_width,background="black")
         self.image_label.configure(highlightthickness=0,highlightcolor="black",borderwidth=0)
-        self.image_label.pack(expand=True)
+        #self.image_label.pack(expand=True)
 
 
    # def setupTKVideoPlayer(self):
@@ -130,14 +139,6 @@ class NFCPictureFrame:
         #self.TkVideoPlayer = TkinterVideo(master=self.root, scaled=False)
         #self.TkVideoPlayer.configure(background="black")
   
-
-    def setRootFolderPath(self,rootFolderPath):
-        """
-        A method to set the root folder path.
-        """
-        if(rootFolderPath == ""):
-            rootFolderPath = os.path.dirname(os.path.realpath(__file__))
-        self.rootFolderPath = rootFolderPath
     
     def setupVLCMediaPlayer(self):
         self.vlcCanvas = tk.Canvas(self.root,height=self.screen_height,width=self.screen_width,background="black")
@@ -149,30 +150,86 @@ class NFCPictureFrame:
     def unpackVLCPlayer(self):
         self.vlcCanvas.pack_forget()
 
-    def scanForNFCFolder(self):
+    def checkRootFolder(self):
         """
-        A method to find a folder with nfcID as name
+        A method to check if the root folder is actually a folder
         """
         #TODO: Add folder picker if no root folder is set
         #Check if the active image folder is set
+        if (self.rootFolderPath == ""):
+            print("No root folder")
+            self.pickRootFolder()
+        else:
+            if (os.path.isdir(self.rootFolderPath)):
+                print("Root folder found")
+                return True
+            else:
+                print("Root folder not found")
+                self.pickRootFolder()
+
+
+    def startImageSlider(self):
+        """
+        A method to start the image slider
+        """
+        self.interruptImageSlider = False
+        self.checkRootFolder()
+        self.checkActiveImageFolder()
+        self.scanFolderForImages()
+        self.image_label.pack(expand=True)
+        self.pickImageAfterIds.append(self.pickImage())
+
+    def stopImageSlider(self):
+        """
+        A method to stop the image slider
+        """
+        self.interruptImageSlider = True
+        self.imageQueue = []
+        self.allReadyShownImages = []
+        self.image_label.pack_forget()
+
+    def changeActiveImageFolder(self,activeImageFolderPath):
+        """
+        A method to change the active image folder
+        """
+        self.stopImageSlider()
+        self.vlcMediaPlayer.stopVideo()
+        self.vlcCanvas.pack_forget()
+        self.activeImageFolderPath = activeImageFolderPath
+        self.startImageSlider()
+
+    def checkActiveImageFolder(self):
         if (self.activeImageFolderPath == ""):
             #If not set the first folder as active image folder
             print("No active image folder. The first folder will be used")
-            folders = os.listdir(self.rootFolderPath)
-            if (folders.__len__() == 0):
-                print("No folders found in root folder")
-            else :
-                self.activeImageFolderPath = self.rootFolderPath+"/"+folders[0]
-        if (os.path.isdir(self.rootFolderPath+"/" +self.nfcID)):
-            self.activeImageFolderPath = self.rootFolderPath+"/" +self.nfcID
-            
-        print(self.activeImageFolderPath)
-        #TODO: Else case if no folder is found. Show error message onscreen
+            self.pickFirstActiveFolder()
+        else :
+            if (os.path.isdir(self.activeImageFolderPath)):
+                print("Active image folder found")
+                return True
+            else:
+                print("Active image folder not found")
+                self.pickFirstActiveFolder()
 
-    def pickRootFolder():
+    def pickFirstActiveFolder(self):    
+        folders = os.listdir(self.rootFolderPath)
+        if (folders.__len__() == 0):
+            print("No folders found in root folder")
+            self.closeWithError("No folders found in root folder")
+        else :
+            self.activeImageFolderPath = self.rootFolderPath+"/"+folders[0]
+
+    def pickRootFolder(self):
         #TODO: Add a method to pick the root folder
-        pass
+        filename = filedialog.askdirectory()
+        if filename == "":
+            print("No folder selected")
+            self.closeWithError("No folder selected")
+        self.rootFolderPath = filename
+        self.writeConfigFile()
     
+    
+
     #Scan folder for images and add them to the queue   
     def scanFolderForImages(self):
         """
@@ -186,6 +243,7 @@ class NFCPictureFrame:
                 self.imageQueue.append(file)
         if(self.imageQueue.__len__ == 0):
             print("No images found in folder")
+            self.closeWithError("No images found in folder")
             return
 
     def pickImage(self):
@@ -206,19 +264,22 @@ class NFCPictureFrame:
                 if(pickedImage.endswith(".mp4")):
                     #To show a video we need to stop the image slider and show the video
                     self.interuptImageSlider = True
-                    self.image_label.pack_forget()                   
-                    self.playVideo(self.activeImageFolderPath+"/"+pickedImage)
+                    self.image_label.pack_forget() 
+                    #self.root.after_cancel(self.playVideoAfterIds.pop)                  
+                    self.playVideoAfterIds = self.playVideo(self.activeImageFolderPath+"/"+pickedImage)
                     return
                 else:
                     self.showImage(self.activeImageFolderPath+"/"+pickedImage)
 
                 #Call this method again after imageTimer
-                self.root.after(self.imageTimer*1000,self.pickImage)
+                #self.root.after_cancel(self.pickImageAfterIds.pop())
+                self.pickImageAfterIds.append(self.root.after(self.imageTimer*1000,self.pickImage))
             else: 
                 print("No more images to show. Restarting queue")
                 self.imageQueue = self.allReadyShownImages
                 self.allReadyShownImages = []
-                self.root.after(1,self.pickImage())
+                #self.root.after_cancel(self.pickImageAfterIds.pop())
+                self.pickImageAfterIds.append(self.root.after(1,self.pickImage)())
 
     def exit_fullscreen(self,event):
         self.root.attributes("-fullscreen", False)
@@ -311,12 +372,49 @@ class NFCPictureFrame:
         """
         if(self.interruptNFCReader):
             return
-        else:
-        #TODO: Add if ID was read and if it is a new ID)
-            print("NFC loop")
-        #TODO: Add else case if no new ID was read
-        self.root.after(1000,self.NFCLoop)
+        nfcId, nfcText = self.readNFCID()
 
+        if(nfcId != "" ):
+            newFolder = self.translateIDToFolderName(str(nfcId))
+            activeImageFolderPath = self.rootFolderPath+"/"+newFolder
+            if(os.path.isdir(activeImageFolderPath)):
+                self.changeActiveImageFolder(activeImageFolderPath)
+            else:
+                print("No folder found for ID: " + str(nfcId))
+                print("Folder path: " + activeImageFolderPath)
+                print("Starting NFC loop again")
+                self.root.after(1000,self.NFCLoop)
+
+        else:
+            print("No ID found")
+            print("Starting NFC loop again")
+            self.root.after(1000,self.NFCLoop)
+            
+
+    def translateIDToFolderName(self,nfcID):
+        """
+        A method to translate the nfcID to a folder name
+        """
+        if(nfcID in self.nfcIDDictinary):
+            return self.nfcIDDictinary[nfcID]
+        else:
+            print("No folder name found for ID: " + nfcID)
+            return nfcID
+
+
+    def readNFCID(self):
+        """
+        A method to read the NFC ID and text
+        """
+        try:
+            reader = SimpleMFRC522()
+            nfcId, nfcText = reader.read()
+            print(nfcId, nfcText)
+        finally:
+            GPIO.cleanup()
+
+        return nfcId, nfcText
+    
     def startNFCLoop(self):
         """
         A method to start the NFC loop
@@ -347,6 +445,21 @@ class NFCPictureFrame:
         self.configParser.set("Settings","activeImageFolderPath",self.activeImageFolderPath)
         with open('config.ini', 'w') as configfile:
             self.configParser.write(configfile)
+
+    def closeWithError(self,errorMessage):
+        """ 
+        A method to close the program and show a message
+        """
+        messagebox.showerror("NFC Picture Frame",errorMessage)
+        self.root.destroy()
+
+
+    def testChangeActiveImageFolder(self,ms,activeImageFolderPath):
+        """
+        A method to test the changeActiveImageFolder method
+        """
+        print("Test change active image folder")
+        self.root.after(ms,self.changeActiveImageFolder,activeImageFolderPath)
 
 x = NFCPictureFrame(5,"")
 
