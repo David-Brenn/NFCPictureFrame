@@ -424,7 +424,8 @@ class NFCPictureFrame:
         A method to start the NFC loop
         """
         self.interruptNFCReader = False
-        self.nfcReaderThread = threading.Thread(self.NFCLoop(),args=(1,),daemon=True)
+        self.nfcReaderThread = threading.Thread(target=self.NFCLoop(),args=(1,),daemon=True)
+        self.nfcReaderThread.start()
 
     def stopNFCLoop(self):
         """
