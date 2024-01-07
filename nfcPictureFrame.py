@@ -260,7 +260,7 @@ class NFCPictureFrame:
             if file.endswith(tuple(file_types)):
                 print(file)
                 self.imageQueue.append(file)
-        if(self.imageQueue.__len__ == 0):
+        if(self.imageQueue.__len__() == 0):
             print("No images found in folder")
             self.closeWithError("No images found in folder")
             return
