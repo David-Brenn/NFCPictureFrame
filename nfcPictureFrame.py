@@ -260,7 +260,7 @@ class NFCPictureFrame:
         """
         Scan the activeImageFolder for images add fill the queue
         """
-        file_types = [".jpg",".jpeg",".png",".gif",".mp4"]
+        file_types = [".JPG","JPEG","PNG",".GIF",".MP4",".jpg",".jpeg",".png",".gif",".mp4"]
         #TODO: Add if folder exist check. If not print error
         for file in os.listdir(self.activeImageFolderPath):
             if file.endswith(tuple(file_types)):
