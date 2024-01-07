@@ -268,7 +268,7 @@ class NFCPictureFrame:
                 self.imageQueue.append(file)
         if(self.imageQueue.__len__() == 0):
             print("No images found in folder:" + self.activeImageFolderPath)
-            self.closeWithError("No images found in folder")
+            self.closeWithError("No images found in folder" + self.activeImageFolderPath)
             return
 
     def pickImage(self):
