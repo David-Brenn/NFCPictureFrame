@@ -444,7 +444,8 @@ class NFCPictureFrame:
         """
         A method to write the config file
         """
-        self.configParser.add_section("Settings")
+        if not (self.configParser.has_section("Settings")):
+            self.configParser.add_section("Settings")
         self.configParser.set("Settings","imageTimer",str(self.imageTimer))
         self.configParser.set("Settings","rootFolderPath",self.rootFolderPath)
         self.configParser.set("Settings","activeImageFolderPath",self.activeImageFolderPath)
