@@ -286,7 +286,7 @@ class NFCPictureFrame:
                 print("Picked image: " + pickedImage)
                 #Add image to allready shown images
                 self.allReadyShownImages.append(pickedImage)
-                if(pickedImage.endswith(".mp4",".MP4",".mov",".MOV")):
+                if(pickedImage.endswith((".mp4",".MP4",".mov",".MOV"))):
                     #To show a video we need to stop the image slider and show the video
                     self.interuptImageSlider = True
                     self.image_label.pack_forget() 
