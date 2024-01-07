@@ -195,14 +195,16 @@ class NFCPictureFrame:
         self.imageQueue = []
         self.allReadyShownImages = []
         self.image_label.pack_forget()
+        self.vlcMediaPlayer.stopVideo()
+        self.vlcCanvas.pack_forget()
+        self.image_label.destroy()
 
     def changeActiveImageFolder(self,activeImageFolderPath):
         """
         A method to change the active image folder
         """
         self.stopImageSlider()
-        self.vlcMediaPlayer.stopVideo()
-        self.vlcCanvas.pack_forget()
+        self.setupTKLable()
         self.setActiveImageFolderPath(activeImageFolderPath)
         self.startImageSlider()
         self.root.after(3000,self.startNFCLoop)
