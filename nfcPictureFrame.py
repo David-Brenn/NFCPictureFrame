@@ -234,6 +234,9 @@ class NFCPictureFrame:
 
     def pickFirstActiveFolder(self):    
         folders = os.listdir(self.rootFolderPath)
+        for folder in folders:
+            if(folder.startswith(".")):
+                folders.remove(folder)
         if (folders.__len__() == 0):
             print("No folders found in root folder")
             self.closeWithError("No folders found in root folder")
