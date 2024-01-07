@@ -280,7 +280,7 @@ class NFCPictureFrame:
                 self.imageQueue = self.allReadyShownImages
                 self.allReadyShownImages = []
                 #self.root.after_cancel(self.pickImageAfterIds.pop())
-                self.pickImageAfterIds.append(self.root.after(1,self.pickImage)())
+                self.pickImageAfterIds.append(self.root.after(1,self.pickImage))
 
     def exit_fullscreen(self,event):
         self.root.attributes("-fullscreen", False)
