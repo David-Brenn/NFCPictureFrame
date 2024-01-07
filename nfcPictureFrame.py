@@ -195,9 +195,16 @@ class NFCPictureFrame:
         self.stopImageSlider()
         self.vlcMediaPlayer.stopVideo()
         self.vlcCanvas.pack_forget()
-        self.activeImageFolderPath = activeImageFolderPath
+        self.setActiveImageFolderPath(activeImageFolderPath)
         self.startImageSlider()
         self.startNFCLoop()
+
+    def setActiveImageFolderPath(self,activeImageFolderPath):
+        """
+        A method to set the active image folder path
+        """
+        self.activeImageFolderPath = activeImageFolderPath
+        self.writeConfigFile()
 
     def checkActiveImageFolder(self):
         if (self.activeImageFolderPath == ""):
@@ -218,7 +225,8 @@ class NFCPictureFrame:
             print("No folders found in root folder")
             self.closeWithError("No folders found in root folder")
         else :
-            self.activeImageFolderPath = self.rootFolderPath+"/"+folders[0]
+            self.setActiveImageFolderPath(self.rootFolderPath+"/"+folders[0])
+            self.writeConfigFile()
 
     def pickRootFolder(self):
         #TODO: Add a method to pick the root folder
