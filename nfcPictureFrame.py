@@ -260,7 +260,7 @@ class NFCPictureFrame:
         """
         Scan the activeImageFolder for images add fill the queue
         """
-        file_types = [".JPG","JPEG","PNG",".GIF",".MP4",".jpg",".jpeg",".png",".gif",".mp4"]
+        file_types = [".JPG","JPEG","PNG",".GIF",".MP4",".jpg",".jpeg",".png",".gif",".mp4",".MOV",".mov"]
         #TODO: Add if folder exist check. If not print error
         for file in os.listdir(self.activeImageFolderPath):
             if file.endswith(tuple(file_types)):
@@ -286,7 +286,7 @@ class NFCPictureFrame:
                 print("Picked image: " + pickedImage)
                 #Add image to allready shown images
                 self.allReadyShownImages.append(pickedImage)
-                if(pickedImage.endswith(".mp4")):
+                if(pickedImage.endswith(".mp4",".MP4",".mov",".MOV")):
                     #To show a video we need to stop the image slider and show the video
                     self.interuptImageSlider = True
                     self.image_label.pack_forget() 
