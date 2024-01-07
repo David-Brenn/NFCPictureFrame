@@ -23,7 +23,7 @@ class NFCPictureFrame:
     A class to handle the picture frame logic. It contains picking the right image and showing in on a tkinter window
     """
     #Time a image is shown in seconds
-    imageTimer = 0
+    imageTimer = 5
     
     #Path to the folder where the images are stored
     rootFolderPath = ""
@@ -98,6 +98,9 @@ class NFCPictureFrame:
         """
         A method to read the config file
         """
+        if (not os.path.isfile("config.ini")):
+            print("No config file found")
+            self.writeConfigFile()
         self.configParser.read("config.ini")
         self.imageTimer = self.configParser.getint("Settings","imageTimer")
         if(self.imageTimer == 0):
