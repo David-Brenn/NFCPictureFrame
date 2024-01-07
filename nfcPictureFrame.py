@@ -1,7 +1,7 @@
 import cv2
 import tkinter as tk
 from tkinter import filedialog
-from PIL import ImageTk, Image
+from PIL import ImageTk, Image, ImageOps
 import os
 from random import randrange
 import time
@@ -336,6 +336,7 @@ class NFCPictureFrame:
         A method to show a image on the image label.
         """
         image = Image.open(image_path)
+        image = ImageOps.exif_transpose(image)
         image.thumbnail((self.screen_width, self.screen_height))
         image = ImageTk.PhotoImage(image)
         self.image_label.configure(image=image,highlightthickness=0,highlightcolor="black",borderwidth=0)
