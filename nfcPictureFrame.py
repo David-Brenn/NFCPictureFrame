@@ -205,7 +205,7 @@ class NFCPictureFrame:
         self.vlcCanvas.pack_forget()
         self.setActiveImageFolderPath(activeImageFolderPath)
         self.startImageSlider()
-        self.startNFCLoop()
+        self.root.after(3000,self.startNFCLoop)
 
     def setActiveImageFolderPath(self,activeImageFolderPath):
         """
