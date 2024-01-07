@@ -38,6 +38,7 @@ class NFCPictureFrame:
     playVideoAfterIds = []
 
     #TKinter image labe. Set this var to show a image
+    sliderFrame = None
     image_label = None
 
 
@@ -122,12 +123,19 @@ class NFCPictureFrame:
         self.screen_height = self.root.winfo_screenheight()
         self.root.geometry(f"{self.screen_width}x{self.screen_height}")
 
+    def setupTKFrame(self):
+        """
+        A method to setup the tkinter frame
+        """
+        self.sliderFrame = tk.Frame(self.root,height=self.screen_height,width=self.screen_width,background="black")
+        self.sliderFrame.configure(highlightthickness=0,highlightcolor="black",borderwidth=0)
+        self.sliderFrame.pack(expand=True)
 
     def setupTKLable(self):
         """
         A method to setup the tkinter image lable
         """
-        self.image_label = tk.Label(self.root,height=self.screen_height,width=self.screen_width,background="black")
+        self.image_label = tk.Label(self.sliderFrame,height=self.screen_height,width=self.screen_width,background="black")
         self.image_label.configure(highlightthickness=0,highlightcolor="black",borderwidth=0)
         #self.image_label.pack(expand=True)
 
@@ -141,7 +149,7 @@ class NFCPictureFrame:
   
     
     def setupVLCMediaPlayer(self):
-        self.vlcCanvas = tk.Canvas(self.root,height=self.screen_height,width=self.screen_width,background="black")
+        self.vlcCanvas = tk.Canvas(self.sliderFrame,height=self.screen_height,width=self.screen_width,background="black")
         self.vlcMediaPlayer.setCanvas(self.vlcCanvas)
 
     def packVLCPlayer(self):
@@ -282,13 +290,13 @@ class NFCPictureFrame:
 
                 #Call this method again after imageTimer
                 #self.root.after_cancel(self.pickImageAfterIds.pop())
-                self.pickImageAfterIds.append(self.root.after(self.imageTimer*1000,self.pickImage))
+                self.pickImageAfterIds.append(self.image_label.after(self.imageTimer*1000,self.pickImage))
             else: 
                 print("No more images to show. Restarting queue")
                 self.imageQueue = self.allReadyShownImages
                 self.allReadyShownImages = []
                 #self.root.after_cancel(self.pickImageAfterIds.pop())
-                self.pickImageAfterIds.append(self.root.after(1,self.pickImage))
+                self.pickImageAfterIds.append(self.image_label.after(1,self.pickImage))
 
     def exit_fullscreen(self,event):
         self.root.attributes("-fullscreen", False)
@@ -300,7 +308,7 @@ class NFCPictureFrame:
         print("Video duration found")
         videoDuration = int(self.TkVideoPlayer.video_info()["duration"])
         print(videoDuration)
-        self.root.after(videoDuration+1,self.videoEnded)
+        self.image_label.after(videoDuration+1,self.videoEnded)
         
     
     #def tkVideoEnded(self):
@@ -338,7 +346,7 @@ class NFCPictureFrame:
         #else:
         self.packVLCPlayer()
         self.vlcMediaPlayer.playVideo(video_path)
-        self.root.after(1000,self.vlcGetDuration)
+        self.image_label.after(1000,self.vlcGetDuration)
             
     
     #def tkVideoGetDuration(self):
@@ -359,9 +367,9 @@ class NFCPictureFrame:
         videoDuration = int(self.vlcMediaPlayer.mediaPlayer.get_length())
         print("VLC VideoDuration: " + str(videoDuration))
         if(videoDuration == 0 or videoDuration == -1):
-            self.root.after(1000,self.vlcGetDuration)
+            self.image_label.after(1000,self.vlcGetDuration)
         else:
-            self.root.after(videoDuration,self.vlcVideoEnded)
+            self.image_label.after(videoDuration,self.vlcVideoEnded)
 
 
     def vlcVideoEnded(self):
@@ -372,7 +380,7 @@ class NFCPictureFrame:
         self.unpackVLCPlayer()
         self.image_label.pack(expand=True)
         self.interruptImageSlider = False
-        self.root.after(1,self.pickImage)
+        self.image_label.after(1,self.pickImage)
         
 
     def NFCLoop(self):
@@ -473,7 +481,7 @@ class NFCPictureFrame:
         A method to test the changeActiveImageFolder method
         """
         print("Test change active image folder")
-        self.root.after(ms,self.changeActiveImageFolder,activeImageFolderPath)
+        self.image_label.after(ms,self.changeActiveImageFolder,activeImageFolderPath)
 
 x = NFCPictureFrame(5,"")
 
