@@ -65,10 +65,10 @@ class NFCPictureFrame:
     
 
     #Bool to interrupt the image slider
-    interruptImageSlider = False
+    interruptImageSlider = True
 
     #Bool to interrupt the NFC reader
-    interruptNFCReader = False
+    interruptNFCReader = True
 
     configParser = ConfigParser()
 
@@ -81,7 +81,6 @@ class NFCPictureFrame:
 
         #Setup tkinter 
         self.setupTKWindow()
-        self.setupTKLable()
 
         #self.setupTKVideoPlayer()
         self.setupVLCMediaPlayer() 
@@ -107,6 +106,14 @@ class NFCPictureFrame:
             self.imageTimer = 5
         self.rootFolderPath = self.configParser.get("Settings","rootFolderPath")
         self.activeImageFolderPath = self.configParser.get("Settings","activeImageFolderPath")
+
+        #Read nfc id dictionary
+        if (self.configParser.has_section("nfcIDDictionary")):
+            for key in self.configParser["nfcIDDictionary"]:
+                self.nfcIDDictinary[key] = self.configParser["nfcIDDictionary"][key]
+        else:
+            self.writeNfcIDDictionary()
+        
         self.checkRootFolder()
         
 
@@ -184,6 +191,7 @@ class NFCPictureFrame:
         A method to start the image slider
         """
         self.interruptImageSlider = False
+        self.setupTKFrame()
         self.checkRootFolder()
         self.checkActiveImageFolder()
         self.scanFolderForImages()
@@ -288,7 +296,7 @@ class NFCPictureFrame:
                 self.allReadyShownImages.append(pickedImage)
                 if(pickedImage.endswith((".mp4",".MP4",".mov",".MOV"))):
                     #To show a video we need to stop the image slider and show the video
-                    self.interuptImageSlider = True
+                    self.interruptImageSlider = True
                     self.image_label.pack_forget() 
                     #self.root.after_cancel(self.playVideoAfterIds.pop)                  
                     self.playVideoAfterIds = self.playVideo(self.activeImageFolderPath+"/"+pickedImage)
@@ -347,27 +355,9 @@ class NFCPictureFrame:
         """
         A method to play a video on the video player. On mac it uses the tkinter video player and on other systems it uses the vlc video player.
         """
-        #if _isMacOS:
-            #self.TkVideoPlayer.load(video_path)
-            #self.TkVideoPlayer.pack(expand=True, fill="both")
-            #self.TkVideoPlayer.play()
-            #self.root.after(1000,self.tkVideoGetDuration)
-        #else:
         self.packVLCPlayer()
         self.vlcMediaPlayer.playVideo(video_path)
         self.image_label.after(1000,self.vlcGetDuration)
-            
-    
-    #def tkVideoGetDuration(self):
-        """
-        A method that calls itself every second until the duration is found. If the duration is found it will call the tkVideoEnded method with the duration as parameter.
-        """
-        #videoDuration = int(self.TkVideoPlayer.video_info()["duration"]*1000)
-        #print("TK VideoDuration " + str(videoDuration))
-        #if(videoDuration == 0):
-            #self.root.after(1000,self.tkVideoGetDuration)
-        #else:
-            #self.root.after(videoDuration,self.tkVideoEnded)
 
     def vlcGetDuration(self):  
         """
@@ -476,6 +466,56 @@ class NFCPictureFrame:
         self.configParser.set("Settings","activeImageFolderPath",self.activeImageFolderPath)
         with open('config.ini', 'w') as configfile:
             self.configParser.write(configfile)
+    
+    def writeNfcIDDictionary(self):
+        """
+        A method to write the nfc id dictionary
+        """
+        if not (self.configParser.has_section("nfcIDDictionary")):
+            self.configParser.add_section("nfcIDDictionary")
+        for key in self.nfcIDDictinary:
+            self.configParser.set("NFCIDDictionary",key,self.nfcIDDictinary[key])
+        with open('config.ini', 'w') as configfile:
+            self.configParser.write(configfile)
+
+    def addNfcID(self,id,folderName):
+        """
+        A method to add a nfc id to the nfc id dictionary
+        """
+        if (self.nfcIDDictinary.__contains__(id)):
+            return "NFC ID already exists"
+        self.nfcIDDictinary[id] = folderName
+        self.writeNfcIDDictionary()
+        return "NFC Tag Added"
+
+    def removeNfcID(self,id):
+        """
+        A method to remove a nfc id from the nfc id dictionary
+        """
+        if(id in self.nfcIDDictinary):
+            self.nfcIDDictinary.pop(id)
+            self.writeNfcIDDictionary()
+        else:
+            return "NFC ID not found"
+        return "NFC Tag Removed"
+
+    def renameNfcID(self,id,newFolderName):
+        """
+        A method to rename a nfc id from the nfc id dictionary
+        """
+        if(id in self.nfcIDDictinary):
+            self.nfcIDDictinary[id] = newFolderName
+            self.writeNfcIDDictionary()
+        else:
+            print("ID not found")
+            return "NFC ID not found"
+        return "NFC Tag Renamed"
+
+    def getNfcIDDictionary(self):
+        """
+        A method to get the nfc id dictionary
+        """
+        return self.nfcIDDictinary
 
     def closeWithError(self,errorMessage):
         """ 
@@ -491,6 +531,8 @@ class NFCPictureFrame:
         """
         print("Test change active image folder")
         self.image_label.after(ms,self.changeActiveImageFolder,activeImageFolderPath)
+
+    
 
 x = NFCPictureFrame(5,"")
 
