@@ -4,16 +4,27 @@ from multiprocessing import Process, Manager
 
 app = Flask(__name__)
 
+
+
 def run_flask_app(shared_state):
-    app.run(host='0.0.0.0')
-
-
-def run_flask_app():
     print("Starting Flask App")
+    @app.route('/')
+    def applicationStatus():
+        string = ""
+        if(shared_state['interruptImageSlider']):
+            string = string + "The image slider is currently not running."
+        else:
+            string = string + "The image slider is currently running."
+        if(shared_state['interruptNFCReader']):
+            string = string + "The NFC reader is currently not running."
+        else:
+            string = string + "The NFC reader is currently running."
+        return string
+    app.run(host='0.0.0.0')
     
 
 def run_imaga_slider(shared_state):
-    print("Starting Image Slider")
+    shared_state['interruptImageSlider'] = True
     nfcPictureFrame = NFCPictureFrame(5,"")
     
 
