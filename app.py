@@ -8,14 +8,16 @@ app = Flask(__name__)
 
 def run_flask_app(shared_state):
     print("Starting Flask App")
+    shared_state_ref = shared_state
+
     @app.route('/')
     def applicationStatus():
         string = ""
-        if(shared_state['interruptImageSlider']):
+        if(shared_state_ref['interruptImageSlider']):
             string = string + "The image slider is currently not running."
         else:
             string = string + "The image slider is currently running."
-        if(shared_state['interruptNFCReader']):
+        if(shared_state_ref['interruptNFCReader']):
             string = string + "The NFC reader is currently not running."
         else:
             string = string + "The NFC reader is currently running."
@@ -23,7 +25,7 @@ def run_flask_app(shared_state):
     app.run(host='0.0.0.0')
     
 
-def run_imaga_slider(shared_state):
+def run_image_slider(shared_state):
     shared_state['interruptImageSlider'] = True
     nfcPictureFrame = NFCPictureFrame(5,"")
     
@@ -32,7 +34,7 @@ if __name__ == '__main__':
     with Manager() as manager:
         shared_state = manager.dict()
 
-        image_slider_process = Process(target=run_imaga_slider, args=(shared_state,))
+        image_slider_process = Process(target=run_image_slider, args=(shared_state,))
 
         flask_process = Process(target=run_flask_app, args=(shared_state,))
 
