@@ -18,7 +18,7 @@ class VlcVideoPlayer:
 
 
     def setupPlayer(self):
-        self.instance = vlc.Instance()
+        self.instance = vlc.Instance("--no-audio --no-subsdec-autodetect-utf8")
         self.mediaPlayer = self.instance.media_player_new()
         self.currentVideo = None
         self.playingVideo = False

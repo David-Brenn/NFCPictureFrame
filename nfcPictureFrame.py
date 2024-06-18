@@ -57,7 +57,7 @@ class NFCPictureFrame:
     nfcIDDictinary = {"584184257487":"images","584184388557":"images2"}
     nfcReaderThread = None
 
-    vlcMediaPlayer = VlcVideoPlayer()
+    vlcMediaPlayer = None
     vlcCanvas = None
 
     #Tkinter video player
@@ -78,6 +78,8 @@ class NFCPictureFrame:
         """
         #Read config file
         self.readConfigFile()
+
+        self.vlcMediaPlayer = VlcVideoPlayer()
 
         #Setup tkinter 
         self.setupTKWindow()
