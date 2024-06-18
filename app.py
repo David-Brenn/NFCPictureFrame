@@ -1,6 +1,6 @@
 from flask import Flask
 from nfcPictureFrame import NFCPictureFrame
-import threading
+from multiprocessing import Process, Manager
 
 app = Flask(__name__)
 
@@ -8,16 +8,30 @@ def run_flask_app():
     app.run(host='0.0.0.0')
 
 
+def run_flask_app():
+    print("Starting Flask App")
+    
 
-nfcPictureFrame = NFCPictureFrame(5,"")
+def run_imaga_slider():
+    print("Starting Image Slider")
+    nfcPictureFrame = NFCPictureFrame(5,"")
+    
 
-nfcPictureFrameThread = threading.Thread(target=nfcPictureFrame.startImageSlider)
+if __name__ == '__main__':
+    with Manager() as manager:
+        shared_state = manager.dict()
 
-nfcPictureFrameThread.start()
+        image_slider_process = Process(target=run_imaga_slider, args=(shared_state,))
 
-flaskThread = threading.Thread(target=run_flask_app)
-flaskThread.start()
+        flask_process = Process(target=run_flask_app, args=(shared_state,))
 
+        image_slider_process.start()
+        flask_process.start()
+
+
+
+
+"""
 @app.route('/')
 def applicationStatus():
     string = ""
@@ -81,3 +95,4 @@ def getNFCTags():
     nfcJson = nfcPictureFrame.getNFCTags().to_json()
     return nfcJson
 
+"""
