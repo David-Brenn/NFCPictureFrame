@@ -82,6 +82,7 @@ class NFCPictureFrame:
         #Setup tkinter 
         self.setupTKWindow()
 
+        self.setupTKFrame()
         #self.setupTKVideoPlayer()
         self.setupVLCMediaPlayer() 
 
@@ -192,8 +193,6 @@ class NFCPictureFrame:
         A method to start the image slider
         """
         self.interruptImageSlider = False
-        if(self.sliderFrame == None):
-            self.setupTKFrame()
         self.setupTKLable()
         self.checkRootFolder()
         self.checkActiveImageFolder()
