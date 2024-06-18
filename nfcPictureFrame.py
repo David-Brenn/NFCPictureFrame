@@ -192,6 +192,7 @@ class NFCPictureFrame:
         """
         self.interruptImageSlider = False
         self.setupTKFrame()
+        self.setupTKLable()
         self.checkRootFolder()
         self.checkActiveImageFolder()
         self.scanFolderForImages()
@@ -215,7 +216,6 @@ class NFCPictureFrame:
         A method to change the active image folder
         """
         self.stopImageSlider()
-        self.setupTKLable()
         self.setActiveImageFolderPath(activeImageFolderPath)
         self.startImageSlider()
         self.root.after(3000,self.startNFCLoop)
