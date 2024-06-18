@@ -10,7 +10,7 @@ def run_flask_app():
 flaskThread = threading.Thread(target=run_flask_app)
 flaskThread.start()
 
-nfcPictureFrameThread = NFCPictureFrame(5,"")
+nfcPictureFrame = NFCPictureFrame(5,"")
 
 
 @app.route('/')
