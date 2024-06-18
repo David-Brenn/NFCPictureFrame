@@ -1,9 +1,17 @@
 from flask import Flask
 from nfcPictureFrame import NFCPictureFrame
+import threading
 
 app = Flask(__name__)
-nfcPictureFrame = NFCPictureFrame(5,"")
-app.run(host='0.0.0.0')
+
+def run_flask_app():
+    app.run(host='0.0.0.0')
+
+flaskThread = threading.Thread(target=run_flask_app)
+flaskThread.start()
+
+nfcPictureFrameThread = NFCPictureFrame(5,"")
+
 
 @app.route('/')
 def applicationStatus():
