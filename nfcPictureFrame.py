@@ -474,7 +474,7 @@ class NFCPictureFrame:
         if not (self.configParser.has_section("nfcIDDictionary")):
             self.configParser.add_section("nfcIDDictionary")
         for key in self.nfcIDDictinary:
-            self.configParser.set("NFCIDDictionary",key,self.nfcIDDictinary[key])
+            self.configParser.set("nfcIDDictionary",key,self.nfcIDDictinary[key])
         with open('config.ini', 'w') as configfile:
             self.configParser.write(configfile)
 
