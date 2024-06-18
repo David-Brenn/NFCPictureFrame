@@ -3,6 +3,7 @@ from nfcPictureFrame import NFCPictureFrame
 
 app = Flask(__name__)
 nfcPictureFrame = NFCPictureFrame(5,"")
+app.run(host='0.0.0.0')
 
 @app.route('/')
 def applicationStatus():
