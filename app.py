@@ -11,6 +11,7 @@ flaskThread = threading.Thread(target=run_flask_app)
 flaskThread.start()
 
 nfcPictureFrame = NFCPictureFrame(5,"")
+nfcPictureFrame.startImageSlider()
 
 
 @app.route('/')

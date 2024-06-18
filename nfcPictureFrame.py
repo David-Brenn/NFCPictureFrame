@@ -90,7 +90,6 @@ class NFCPictureFrame:
         self.startNFCLoop()
         #self.testVLCPlayer()
         #Start the image slider
-        self.startImageSlider()
         self.root.mainloop()
 
     def readConfigFile(self):
