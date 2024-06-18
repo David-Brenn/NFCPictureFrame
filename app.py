@@ -7,12 +7,16 @@ app = Flask(__name__)
 def run_flask_app():
     app.run(host='0.0.0.0')
 
-flaskThread = threading.Thread(target=run_flask_app)
-flaskThread.start()
+
 
 nfcPictureFrame = NFCPictureFrame(5,"")
-nfcPictureFrame.startImageSlider()
 
+nfcPictureFrameThread = threading.Thread(target=nfcPictureFrame.startImageSlider)
+
+nfcPictureFrameThread.start()
+
+flaskThread = threading.Thread(target=run_flask_app)
+flaskThread.start()
 
 @app.route('/')
 def applicationStatus():
