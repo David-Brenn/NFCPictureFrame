@@ -531,8 +531,3 @@ class NFCPictureFrame:
         """
         print("Test change active image folder")
         self.image_label.after(ms,self.changeActiveImageFolder,activeImageFolderPath)
-
-    
-
-x = NFCPictureFrame(5,"")
-
