@@ -4,7 +4,7 @@ from multiprocessing import Process, Manager
 
 app = Flask(__name__)
 
-def run_flask_app():
+def run_flask_app(shared_state):
     app.run(host='0.0.0.0')
 
 
@@ -12,7 +12,7 @@ def run_flask_app():
     print("Starting Flask App")
     
 
-def run_imaga_slider():
+def run_imaga_slider(shared_state):
     print("Starting Image Slider")
     nfcPictureFrame = NFCPictureFrame(5,"")
     
