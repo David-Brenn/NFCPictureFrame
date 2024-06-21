@@ -75,7 +75,7 @@ def run_flask_app(shared_state):
 
 def run_image_slider(shared_state):
     shared_state['interruptImageSlider'] = True
-    nfcPictureFrame = NFCPictureFrame(5,"",shared_state)
+    nfcPictureFrame = NFCPictureFrame(5,"")
     
 
 if __name__ == '__main__':
