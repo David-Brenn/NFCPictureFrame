@@ -514,7 +514,7 @@ class NFCPictureFrame:
         reader = SimpleMFRC522()
         nfcId = ""
         nfcText = ""
-        while self.interruptNFCReader:
+        while not self.interruptNFCReader:
             result = None
             #Create a new thread to read the NFC ID
             readingThread = threading.Thread(target=self.blockingReadNFCID,args=(reader,result))
