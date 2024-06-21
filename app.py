@@ -1,14 +1,14 @@
 from flask import Flask
 from nfcPictureFrame import NFCPictureFrame
-from multiprocessing import Process, Manager
+from multiprocessing import Process, Pipe
 
 
 
 
 
-def run_flask_app(shared_state):
+def run_flask_app(pipe_conn):
     app = Flask(__name__)
-    print("Starting Flask App")
+    print(pipe_conn.recv())
 
     @app.route('/')
     def applicationStatus():
@@ -73,18 +73,17 @@ def run_flask_app(shared_state):
 
     
 
-def run_image_slider(shared_state):
-    shared_state['interruptImageSlider'] = True
+def run_image_slider(pipe_conn):
+    pipe_conn.send("Starting Image Slider")
     nfcPictureFrame = NFCPictureFrame(5,"")
     
 
 if __name__ == '__main__':
-    with Manager() as manager:
-        shared_state = manager.dict()
+        
+        parent_conn, child_conn = Pipe()
+        image_slider_process = Process(target=run_image_slider, args=(child_conn,))
 
-        image_slider_process = Process(target=run_image_slider, args=(shared_state,))
-
-        flask_process = Process(target=run_flask_app, args=(shared_state,))
+        flask_process = Process(target=run_flask_app, args=(parent_conn,))
 
         image_slider_process.start()
         flask_process.start()
