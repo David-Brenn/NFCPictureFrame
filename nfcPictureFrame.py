@@ -122,7 +122,7 @@ class NFCPictureFrame:
                     if(self.interruptImageSlider):
                         statusMessage += "NFC Frame: Stopped"
                     else:
-                        statusMessage += "\NFC Frame: Running"
+                        statusMessage += "\nNFC Frame: Running"
                     if(self.interruptNFCReader):
                         statusMessage += "\nNFC Reader: Stopped"
                     else:
