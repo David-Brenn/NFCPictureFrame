@@ -524,7 +524,7 @@ class NFCPictureFrame:
             GPIO.cleanup()
             if not (readingThread.is_alive()):
                 print("Result found")
-                print("NFC ID: " + str(result.nfcId) + " NFC Text: " + result.nfcText)
+                print("NFC ID: " + str(result["nfcId"]) + " NFC Text: " + result["nfcText"])
                 break
         return result.nfcId, result.nfcText
     
@@ -534,8 +534,8 @@ class NFCPictureFrame:
         try:
             nfcId, nfcText = reader.read()
             print("Finished reading")
-            result.nfcId = nfcId
-            result.nfcText = nfcText
+            result["nfcId"] = nfcId
+            result["nfcText"] = nfcText
         finally:
             GPIO.cleanup()
         
