@@ -122,11 +122,11 @@ class NFCPictureFrame:
                     if(self.interruptImageSlider):
                         statusMessage += "NFC Frame: Stopped"
                     else:
-                        statusMessage += "NFC Frame: Running"
+                        statusMessage += "\NFC Frame: Running"
                     if(self.interruptNFCReader):
-                        statusMessage += " NFC Reader: Stopped"
+                        statusMessage += "\nNFC Reader: Stopped"
                     else:
-                        statusMessage += " NFC Reader: Running"
+                        statusMessage += "\nNFC Reader: Running"
                     self.pipe_conn.send(statusMessage)
                 if(message == Command.START):
                     statusMessage = ""
@@ -137,9 +137,9 @@ class NFCPictureFrame:
                         statusMessage += "NFC Frame: Already Started"
                     if(self.interruptNFCReader):
                         self.startNFCLoop()
-                        statusMessage += "NFC Reader: Started"
+                        statusMessage += "\nNFC Reader: Started"
                     else:
-                        statusMessage += "NFC Reader: Already Started"
+                        statusMessage += "\nNFC Reader: Already Started"
                     self.pipe_conn.send(statusMessage)
                 if(message == Command.STOP):
                     statusMessage = ""
@@ -150,9 +150,9 @@ class NFCPictureFrame:
                         statusMessage += "NFC Frame: Already Stopped"
                     if not (self.interruptNFCReader):
                         self.stopNFCLoop()
-                        statusMessage += "NFC Reader: Stopped"
+                        statusMessage += "\nNFC Reader: Stopped"
                     else:
-                        statusMessage += "NFC Reader: Already Stopped"
+                        statusMessage += "\nNFC Reader: Already Stopped"
                     self.pipe_conn.send(statusMessage)
 
             time.sleep(1)
@@ -287,6 +287,7 @@ class NFCPictureFrame:
         self.vlcMediaPlayer.stopVideo()
         self.vlcCanvas.pack_forget()
         self.image_label.destroy()
+        self.sliderFrame.configure(highlightthickness=2,highlightcolor="red",borderwidth=2)
 
     def changeActiveImageFolder(self,activeImageFolderPath):
         """
