@@ -129,27 +129,31 @@ class NFCPictureFrame:
                         statusMessage += " NFC Reader: Running"
                     self.pipe_conn.send(statusMessage)
                 if(message == Command.START):
+                    statusMessage = ""
                     if(self.interruptImageSlider):
                         self.startImageSlider()
-                        self.pipe_conn.send("NFC Frame: Started")
+                        statusMessage += "NFC Frame: Started"
                     else:
-                        self.pipe_conn.send("NFC Frame: Already Started")
+                        statusMessage += "NFC Frame: Already Started"
                     if(self.interruptNFCReader):
                         self.startNFCLoop()
-                        self.pipe_conn.send("NFC Reader: Started")
+                        statusMessage += "NFC Reader: Started"
                     else:
-                        self.pipe_conn.send("NFC Reader: Already Started")
+                        statusMessage += "NFC Reader: Already Started"
+                    self.pipe_conn.send(statusMessage)
                 if(message == Command.STOP):
+                    statusMessage = ""
                     if not (self.interruptImageSlider):
                         self.stopImageSlider()
-                        self.pipe_conn.send("NFC Frame: Stopped")
+                        statusMessage += "NFC Frame: Stopped"
                     else:
-                        self.pipe_conn.send("NFC Frame: Already Stopped")
+                        statusMessage += "NFC Frame: Already Stopped"
                     if not (self.interruptNFCReader):
                         self.stopNFCLoop()
-                        self.pipe_conn.send("NFC Reader: Stopped")
+                        statusMessage += "NFC Reader: Stopped"
                     else:
-                        self.pipe_conn.send("NFC Reader: Already Stopped")
+                        statusMessage += "NFC Reader: Already Stopped"
+                    self.pipe_conn.send(statusMessage)
 
             time.sleep(1)
 
