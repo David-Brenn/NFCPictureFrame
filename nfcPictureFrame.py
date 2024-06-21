@@ -526,7 +526,7 @@ class NFCPictureFrame:
                 print("Result found")
                 print("NFC ID: " + str(result["nfcId"]) + " NFC Text: " + result["nfcText"])
                 break
-        return result.nfcId, result.nfcText
+        return result["nfcId"], result["nfcText"]
     
     
     def blockingReadNFCID(self,reader,result):
