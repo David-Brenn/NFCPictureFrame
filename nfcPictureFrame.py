@@ -512,23 +512,22 @@ class NFCPictureFrame:
         A method to read the NFC ID and text
         """
         reader = SimpleMFRC522()
-        nfcId = ""
-        nfcText = ""
+        result = {
+            "nfcId": "",
+            "nfcText": "",
+            }
+        readingThread = threading.Thread(target=self.blockingReadNFCID,args=(reader,result))
         while not self.interruptNFCReader:
             result = None
             #Create a new thread to read the NFC ID
-            readingThread = threading.Thread(target=self.blockingReadNFCID,args=(reader,result))
             readingThread.start()
             readingThread.join(5)
             GPIO.cleanup()
             if not (readingThread.is_alive()):
-                nfcId = result[0]
-                nfcText = result[1]
                 print("Result found")
-                print("NFC ID: " + str(nfcId) + " NFC Text: " + nfcText)
+                print("NFC ID: " + str(result.nfcId) + " NFC Text: " + result.nfcText)
                 break
-
-        return nfcId, nfcText
+        return result.nfcId, result.nfcText
     
     
     def blockingReadNFCID(self,reader,result):
@@ -536,7 +535,8 @@ class NFCPictureFrame:
         try:
             nfcId, nfcText = reader.read()
             print("Finished reading")
-            result = (nfcId, nfcText)
+            result.nfcId = nfcId
+            result.nfcText = nfcText
         finally:
             GPIO.cleanup()
         
