@@ -268,7 +268,9 @@ class NFCPictureFrame:
         A method to start the image slider
         """
         self.setInterruptImageSlider(False)
+        self.sliderFrame.configure(highlightbackground = "black",highlightthickness=0,borderwidth=0)
         self.setupTKLable()
+
         self.checkRootFolder()
         self.checkActiveImageFolder()
         self.scanFolderForImages()
