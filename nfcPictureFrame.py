@@ -474,6 +474,11 @@ class NFCPictureFrame:
         if(nfcId != "" ):
             newFolder = self.translateIDToFolderName(str(nfcId))
             activeImageFolderPath = self.rootFolderPath+"/"+newFolder
+            if(self.activeImageFolderPath == activeImageFolderPath):
+                print("Same folder")
+                print("Starting NFC loop again")
+                time.sleep(3)
+                self.NFCLoop()
             if(os.path.isdir(activeImageFolderPath)):
                 self.changeActiveImageFolder(activeImageFolderPath)
                 self.stopNFCLoop()
@@ -481,13 +486,13 @@ class NFCPictureFrame:
                 print("No folder found for ID: " + str(nfcId))
                 print("Folder path: " + activeImageFolderPath)
                 print("Starting NFC loop again")
-                time.sleep(1)
+                time.sleep(3)
                 self.NFCLoop()
 
         else:
             print("No ID found")
             print("Starting NFC loop again")
-            time.sleep(1)
+            time.sleep(3)
             self.NFCLoop()
             
 
@@ -506,15 +511,35 @@ class NFCPictureFrame:
         """
         A method to read the NFC ID and text
         """
-        try:
-            reader = SimpleMFRC522()
-            nfcId, nfcText = reader.read()
-            print(nfcId, nfcText)
-        finally:
+        reader = SimpleMFRC522()
+        while self.interruptNFCReader:
+            result = None
+            #Create a new thread to read the NFC ID
+            readingThread = threading.Thread(target=self.blockingReadNFCID,args=(reader,result))
+            readingThread.start()
+            readingThread.join(5)
             GPIO.cleanup()
+            if not (readingThread.is_alive()):
+                nfcId = result[0]
+                nfcText = result[1]
+                print("Result found")
+                print("NFC ID: " + str(nfcId) + " NFC Text: " + nfcText)
+                break
 
         return nfcId, nfcText
     
+    
+    def blockingReadNFCID(self,reader,result):
+        print("Starting blocking read")
+        try:
+            nfcId, nfcText = reader.read()
+            print("Finished reading")
+            result = (nfcId, nfcText)
+        finally:
+            GPIO.cleanup()
+        
+            
+
     def startNFCLoop(self):
         """
         A method to start the NFC loop
