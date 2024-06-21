@@ -303,9 +303,6 @@ class NFCPictureFrame:
         Picks a random image from the ImageQueue and set it to the image label
         If the image is a video it will be played
         """
-        if(self.shared_state['interruptImageSlider']!=self.interruptImageSlider):
-            self.interruptImageSlider = self.shared_state['interruptImageSlider']
-
         if(self.interruptImageSlider):
             return
         else:
@@ -408,9 +405,6 @@ class NFCPictureFrame:
         """
         A method to loop the NFC reader and check for new nfc tags. This method is called every second and only stops if a new nfc tag is read and then loads images from the new folder.
         """
-        if(self.shared_state['interruptNFCReader']!=self.interruptNFCReader):
-            self.interruptNFCReader = self.shared_state['interruptNFCReader']
-
         if(self.interruptNFCReader):
             return
         nfcId, nfcText = self.readNFCID()
