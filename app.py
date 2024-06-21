@@ -13,7 +13,11 @@ def run_flask_app(pipeConn):
     @app.route('/')
     def applicationStatus():
         pipeConn.send(Command.STATUS)
-        status = pipeConn.recv()
+        if pipeConn.poll(3):
+            status = pipeConn.recv()
+            return status
+        else: 
+            return "No response from Image Slider"
         return status
     
     app.run(host='0.0.0.0')
