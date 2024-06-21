@@ -287,7 +287,7 @@ class NFCPictureFrame:
         self.vlcMediaPlayer.stopVideo()
         self.vlcCanvas.pack_forget()
         self.image_label.destroy()
-        self.sliderFrame.configure(highlightthickness=2,highlightcolor="red",borderwidth=2)
+        self.sliderFrame.configure(highlightthickness=2,background="red",borderwidth=2)
 
     def changeActiveImageFolder(self,activeImageFolderPath):
         """
