@@ -70,14 +70,17 @@ class NFCPictureFrame:
     #Bool to interrupt the NFC reader
     interruptNFCReader = True
 
+
     configParser = ConfigParser()
 
     def __init__(self,imageTimer,rootFolderPath):
         """
         A method to init the NFCPictureFrame class. It calls all the setup methods and starts the image slider and the NFC reader.
         """
+
         #Read config file
         self.readConfigFile()
+
 
         self.vlcMediaPlayer = VlcVideoPlayer()
 
@@ -99,7 +102,7 @@ class NFCPictureFrame:
 
     def readConfigFile(self):
         """
-        A method to read the config file
+        A method to read the config file. If no file is found it will create a new one.
         """
         if (not os.path.isfile("config.ini")):
             print("No config file found")
@@ -189,24 +192,36 @@ class NFCPictureFrame:
                 print("Root folder not found")
                 self.pickRootFolder()
 
+    def setInterruptImageSlider(self,boolean):
+        """
+        A method to set the interruptImageSlider variable
+        """
+        self.interruptImageSlider = boolean
+
+    def setInterruptNFCReader(self,boolean):
+        """
+        A method to set the interruptNFCReader variable
+        """
+        self.interruptNFCReader = boolean
 
     def startImageSlider(self):
         """
         A method to start the image slider
         """
-        self.interruptImageSlider = False
+        self.setInterruptImageSlider(False)
         self.setupTKLable()
         self.checkRootFolder()
         self.checkActiveImageFolder()
         self.scanFolderForImages()
         self.image_label.pack(expand=True)
+        #TODO: Mabye remove the append step and simply call the method
         self.pickImageAfterIds.append(self.pickImage())
 
     def stopImageSlider(self):
         """
         A method to stop the image slider
         """
-        self.interruptImageSlider = True
+        self.setInterruptImageSlider(True)
         self.imageQueue = []
         self.allReadyShownImages = []
         self.image_label.pack_forget()
@@ -288,6 +303,9 @@ class NFCPictureFrame:
         Picks a random image from the ImageQueue and set it to the image label
         If the image is a video it will be played
         """
+        if(self.shared_state['interruptImageSlider']!=self.interruptImageSlider):
+            self.interruptImageSlider = self.shared_state['interruptImageSlider']
+
         if(self.interruptImageSlider):
             return
         else:
@@ -300,7 +318,7 @@ class NFCPictureFrame:
                 self.allReadyShownImages.append(pickedImage)
                 if(pickedImage.endswith((".mp4",".MP4",".mov",".MOV"))):
                     #To show a video we need to stop the image slider and show the video
-                    self.interruptImageSlider = True
+                    self.setInterruptImageSlider(True)
                     self.image_label.pack_forget() 
                     #self.root.after_cancel(self.playVideoAfterIds.pop)                  
                     self.playVideoAfterIds = self.playVideo(self.activeImageFolderPath+"/"+pickedImage)
@@ -338,7 +356,7 @@ class NFCPictureFrame:
         #self.TkVideoPlayer.stop()
         #self.TkVideoPlayer.pack_forget()
         #self.image_label.pack(expand=True)
-        #self.interruptImageSlider = False
+        #self.setInterruptImageSlider(False)
         #self.root.after(1,self.pickImage)
         #return
 
@@ -382,7 +400,7 @@ class NFCPictureFrame:
         self.vlcMediaPlayer.stopVideo()
         self.unpackVLCPlayer()
         self.image_label.pack(expand=True)
-        self.interruptImageSlider = False
+        self.setInterruptImageSlider(False)
         self.image_label.after(1,self.pickImage)
         
 
@@ -390,6 +408,9 @@ class NFCPictureFrame:
         """
         A method to loop the NFC reader and check for new nfc tags. This method is called every second and only stops if a new nfc tag is read and then loads images from the new folder.
         """
+        if(self.shared_state['interruptNFCReader']!=self.interruptNFCReader):
+            self.interruptNFCReader = self.shared_state['interruptNFCReader']
+
         if(self.interruptNFCReader):
             return
         nfcId, nfcText = self.readNFCID()

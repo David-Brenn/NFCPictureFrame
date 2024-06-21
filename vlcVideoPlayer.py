@@ -5,6 +5,10 @@ _isMacOS   = sys.platform.startswith('darwin')
 _isLinux   = sys.platform.startswith('linux')
 _isWindows = sys.platform.startswith('win')
 
+
+"""
+Wrapper class for the VLC video player. 
+"""
 class VlcVideoPlayer:
     instance = None
     mediaPlayer = None
