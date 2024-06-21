@@ -116,7 +116,7 @@ class NFCPictureFrame:
         while True:
             if(self.pipe_conn.poll()):
                 message = self.pipe_conn.recv()
-                print("Message from pipe: " + message)
+                print("Message from pipe: " + message.value)
                 if(message == Command.STATUS):
                     statusMessage = ""
                     if(self.interruptImageSlider):
