@@ -128,6 +128,29 @@ class NFCPictureFrame:
                     else:
                         statusMessage += " NFC Reader: Running"
                     self.pipe_conn.send(statusMessage)
+                if(message == Command.START):
+                    if(self.interruptImageSlider):
+                        self.startImageSlider()
+                        self.pipe_conn.send("NFC Frame: Started")
+                    else:
+                        self.pipe_conn.send("NFC Frame: Already Started")
+                    if(self.interruptNFCReader):
+                        self.startNFCLoop()
+                        self.pipe_conn.send("NFC Reader: Started")
+                    else:
+                        self.pipe_conn.send("NFC Reader: Already Started")
+                if(message == Command.STOP):
+                    if not (self.interruptImageSlider):
+                        self.stopImageSlider()
+                        self.pipe_conn.send("NFC Frame: Stopped")
+                    else:
+                        self.pipe_conn.send("NFC Frame: Already Stopped")
+                    if not (self.interruptNFCReader):
+                        self.stopNFCLoop()
+                        self.pipe_conn.send("NFC Reader: Stopped")
+                    else:
+                        self.pipe_conn.send("NFC Reader: Already Stopped")
+
             time.sleep(1)
 
         
