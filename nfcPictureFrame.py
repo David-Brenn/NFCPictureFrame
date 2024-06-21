@@ -13,6 +13,7 @@ from tkinter import messagebox
 from mfrc522 import SimpleMFRC522
 import RPi.GPIO as GPIO
 import threading
+from commands import Command
 
 _isMacOS   = sys.platform.startswith('darwin')
 _isLinux   = sys.platform.startswith('linux')
@@ -60,6 +61,7 @@ class NFCPictureFrame:
     vlcMediaPlayer = None
     vlcCanvas = None
 
+    pipeConn = None
     #Tkinter video player
     #TkVideoPlayer = None
     
@@ -73,7 +75,7 @@ class NFCPictureFrame:
 
     configParser = ConfigParser()
 
-    def __init__(self,imageTimer,rootFolderPath):
+    def __init__(self,imageTimer,rootFolderPath,pipeConn):
         """
         A method to init the NFCPictureFrame class. It calls all the setup methods and starts the image slider and the NFC reader.
         """
@@ -91,13 +93,43 @@ class NFCPictureFrame:
         #self.setupTKVideoPlayer()
         self.setupVLCMediaPlayer() 
 
-        
+        self.pipe_conn = pipeConn
+        self.startPipeHandler()
         #Start the NFC loop
         self.startNFCLoop()
         #self.testVLCPlayer()
         #Start the image slider
         self.startImageSlider()
         self.root.mainloop()
+        
+    def startPipeHandler(self):
+        """
+        A method to start the pipe handler. This method is called from the main method and is used to handle the pipe connection.
+        """
+        self.pipeHandlerThread = threading.Thread(target=self.pipeHandler,args=(),daemon=True)
+        self.pipeHandlerThread.start()
+
+    def pipeHandler(self):
+        """
+        A method to handle the pipe connection.
+        """
+        while True:
+            if(self.pipe_conn.poll()):
+                message = self.pipe_conn.recv()
+                print("Message from pipe: " + message)
+                if(message == Command.STATUS):
+                    statusMessage = ""
+                    if(self.interruptImageSlider):
+                        statusMessage += "NFC Frame: Stopped"
+                    else:
+                        statusMessage += "NFC Frame: Running"
+                    if(self.interruptNFCReader):
+                        statusMessage += " NFC Reader: Stopped"
+                    else:
+                        statusMessage += " NFC Reader: Running"
+                    self.pipe_conn.send(statusMessage)
+            time.sleep(1)
+
         
 
     def readConfigFile(self):

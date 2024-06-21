@@ -1,20 +1,21 @@
 from flask import Flask
 from nfcPictureFrame import NFCPictureFrame
 from multiprocessing import Process, Pipe
+from commands import Command
 
 
 
 
-
-def run_flask_app(pipe_conn):
+def run_flask_app(pipeConn):
     app = Flask(__name__)
-    print(pipe_conn.recv())
+    print(pipeConn.recv())
 
     @app.route('/')
     def applicationStatus():
-        string = ""
-        string = string + "The image slider is currently not running."
-        return string
+        pipeConn.send(Command.STATUS)
+        status = pipeConn.recv()
+        return status
+    
     app.run(host='0.0.0.0')
 
 
@@ -73,17 +74,17 @@ def run_flask_app(pipe_conn):
 
     
 
-def run_image_slider(pipe_conn):
-    pipe_conn.send("Starting Image Slider")
-    nfcPictureFrame = NFCPictureFrame(5,"")
+def run_image_slider(pipeConn):
+    pipeConn.send("Starting Image Slider")
+    nfcPictureFrame = NFCPictureFrame(5,"",pipeConn)
     
 
 if __name__ == '__main__':
         
-        parent_conn, child_conn = Pipe()
-        image_slider_process = Process(target=run_image_slider, args=(child_conn,))
+        parentConn, childConn = Pipe()
+        image_slider_process = Process(target=run_image_slider, args=(childConn,))
 
-        flask_process = Process(target=run_flask_app, args=(parent_conn,))
+        flask_process = Process(target=run_flask_app, args=(parentConn,))
 
         image_slider_process.start()
         flask_process.start()
