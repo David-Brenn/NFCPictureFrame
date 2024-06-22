@@ -453,34 +453,29 @@ class NFCPictureFrame:
         """
         A method to loop the NFC reader and check for new nfc tags. This method is called every second and only stops if a new nfc tag is read and then loads images from the new folder.
         """
-        if(self.interruptNFCReader):
-            return
-        nfcId, nfcText = self.readNFCID()
+        while(self.interruptNFCReader):
+            nfcId,nfcText = self.readNFCID()
+            if(nfcId != "" ):
+                newFolder = self.translateIDToFolderName(str(nfcId))
+                activeImageFolderPath = self.rootFolderPath+"/"+newFolder
+                if(activeImageFolderPath == self.activeImageFolderPath):
+                    print("Same folder")
+                    print("Starting NFC loop again")
+                    time.sleep(5)
+                elif(os.path.isdir(activeImageFolderPath)):
+                    self.changeActiveImageFolder(activeImageFolderPath)
+                    self.stopNFCLoop()
+                else:
+                    print("No folder found for ID: " + str(nfcId))
+                    print("Folder path: " + activeImageFolderPath)
+                    print("Starting NFC loop again")
+                    time.sleep(5)
 
-        if(nfcId != "" ):
-            newFolder = self.translateIDToFolderName(str(nfcId))
-            activeImageFolderPath = self.rootFolderPath+"/"+newFolder
-            if(activeImageFolderPath == self.activeImageFolderPath):
-                print("Same folder")
-                print("Starting NFC loop again")
-                time.sleep(5)
-                self.NFCLoop()
-            if(os.path.isdir(activeImageFolderPath)):
-                self.changeActiveImageFolder(activeImageFolderPath)
-                self.stopNFCLoop()
             else:
-                print("No folder found for ID: " + str(nfcId))
-                print("Folder path: " + activeImageFolderPath)
+                print("No ID found")
                 print("Starting NFC loop again")
                 time.sleep(5)
-                self.NFCLoop()
-
-        else:
-            print("No ID found")
-            print("Starting NFC loop again")
-            time.sleep(5)
-            self.NFCLoop()
-            
+                
 
     def translateIDToFolderName(self,nfcID):
         """
