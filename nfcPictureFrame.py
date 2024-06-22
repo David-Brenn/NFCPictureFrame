@@ -14,6 +14,7 @@ from mfrc522 import SimpleMFRC522
 import RPi.GPIO as GPIO
 import threading
 from commands import Command
+import asyncio
 
 _isMacOS   = sys.platform.startswith('darwin')
 _isLinux   = sys.platform.startswith('linux')
@@ -507,7 +508,7 @@ class NFCPictureFrame:
             return nfcID
 
 
-    def readNFCID(self):
+    async def readNFCID(self):
         """
         A method to read the NFC ID and text
         """
@@ -517,19 +518,19 @@ class NFCPictureFrame:
             "nfcText": "",
             }
         while not self.interruptNFCReader:
-            readingThread = threading.Thread(target=self.blockingReadNFCID,args=(reader,result))
-            #Create a new thread to read the NFC ID
-            readingThread.start()
-            readingThread.join(5)
-            GPIO.cleanup()
-            if not (readingThread.is_alive()):
+            try:
+                await asyncio.wait_for(self.blockingReadNFCID(reader,result),timeout=5)
+
+            except asyncio.TimeoutError:
+                pass
+                
                 print("Result found")
                 print("NFC ID: " + str(result["nfcId"]) + " NFC Text: " + result["nfcText"])
                 break
         return result["nfcId"], result["nfcText"]
     
     
-    def blockingReadNFCID(self,reader,result):
+    async def blockingReadNFCID(self,reader,result):
         print("Starting blocking read")
         try:
             nfcId, nfcText = reader.read()
