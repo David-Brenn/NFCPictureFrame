@@ -460,6 +460,11 @@ class NFCPictureFrame:
         if(nfcId != "" ):
             newFolder = self.translateIDToFolderName(str(nfcId))
             activeImageFolderPath = self.rootFolderPath+"/"+newFolder
+            if(activeImageFolderPath == self.activeImageFolderPath):
+                print("Same folder")
+                print("Starting NFC loop again")
+                time.sleep(5)
+                self.NFCLoop()
             if(os.path.isdir(activeImageFolderPath)):
                 self.changeActiveImageFolder(activeImageFolderPath)
                 self.stopNFCLoop()
@@ -467,13 +472,13 @@ class NFCPictureFrame:
                 print("No folder found for ID: " + str(nfcId))
                 print("Folder path: " + activeImageFolderPath)
                 print("Starting NFC loop again")
-                time.sleep(1)
+                time.sleep(5)
                 self.NFCLoop()
 
         else:
             print("No ID found")
             print("Starting NFC loop again")
-            time.sleep(1)
+            time.sleep(5)
             self.NFCLoop()
             
 
