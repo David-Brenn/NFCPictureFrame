@@ -453,7 +453,7 @@ class NFCPictureFrame:
         """
         A method to loop the NFC reader and check for new nfc tags. This method is called every second and only stops if a new nfc tag is read and then loads images from the new folder.
         """
-        while(self.interruptNFCReader):
+        while not (self.interruptNFCReader):
             nfcId,nfcText = self.readNFCID()
             if(nfcId != "" ):
                 newFolder = self.translateIDToFolderName(str(nfcId))
