@@ -88,7 +88,7 @@ def setImageTimer(timer):
     configParser.set("Settings","imageTimer",str(timer))
     with open('config.ini', 'w') as configfile:
         configParser.write(configfile)
-    return "Image Timer set"
+    return True
 
 
 def writeNfcIDDictionary():
@@ -101,7 +101,7 @@ def writeNfcIDDictionary():
         configParser.set("nfcIDDictionary",key,nfcIDDictinary[key])
     with open('config.ini', 'w') as configfile:
         configParser.write(configfile)
-    return "NFC ID Dictionary written"
+    return True
 
 
 def addNfcID(id,folderName):
@@ -109,10 +109,10 @@ def addNfcID(id,folderName):
     A method to add a nfc id to the nfc id dictionary
     """
     if (nfcIDDictinary.__contains__(id)):
-        return "NFC ID already exists"
+        return False
     nfcIDDictinary[id] = folderName
     writeNfcIDDictionary()
-    return "NFC Tag Added"
+    return True
 
 
 def removeNfcID(id):
@@ -123,8 +123,8 @@ def removeNfcID(id):
         nfcIDDictinary.pop(id)
         writeNfcIDDictionary()
     else:
-        return "NFC ID not found"
-    return "NFC Tag Removed"
+        return False
+    return True
 
 
 def renameNfcID(id,newFolderName):
@@ -136,8 +136,8 @@ def renameNfcID(id,newFolderName):
         writeNfcIDDictionary()
     else:
         print("ID not found")
-        return "NFC ID not found"
-    return "NFC Tag Renamed"
+        return False
+    return True
 
 
 # Initialize the config file
