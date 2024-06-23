@@ -24,13 +24,6 @@ class NFCPictureFrame:
     """ 
     A class to handle the picture frame logic. It contains picking the right image and showing in on a tkinter window
     """
-    #Time a image is shown in seconds
-    imageTimer = 5
-    
-    #Path to the folder where the images are stored
-    rootFolderPath = ""
-
-    activeImageFolderPath = ""
 
     #Tkinter root window
     root = None
@@ -56,7 +49,8 @@ class NFCPictureFrame:
     
     #place holder of the nfcID
     nfcID = ""
-    nfcIDDictinary = {"584184257487":"images","584184388557":"images2"}
+    
+    #nfcIDDictinary = {"584184257487":"images","584184388557":"images2"}
     nfcReaderThread = None
 
     vlcMediaPlayer = None
@@ -143,33 +137,6 @@ class NFCPictureFrame:
 
             time.sleep(1)
 
-        
-
-    def readConfigFile(self):
-        """
-        A method to read the config file. If no file is found it will create a new one.
-        """
-        if (not os.path.isfile("config.ini")):
-            print("No config file found")
-            self.writeConfigFile()
-        self.configParser.read("config.ini")
-        self.imageTimer = self.configParser.getint("Settings","imageTimer")
-        if(self.imageTimer == 0):
-            self.imageTimer = 5
-        self.rootFolderPath = self.configParser.get("Settings","rootFolderPath")
-        self.activeImageFolderPath = self.configParser.get("Settings","activeImageFolderPath")
-
-        #Read nfc id dictionary
-        if (self.configParser.has_section("nfcIDDictionary")):
-            for key in self.configParser["nfcIDDictionary"]:
-                self.nfcIDDictinary[key] = self.configParser["nfcIDDictionary"][key]
-        else:
-            self.writeNfcIDDictionary()
-        
-        self.checkRootFolder()
-        
-
-
     
         
     def setupTKWindow(self):  
@@ -226,11 +193,11 @@ class NFCPictureFrame:
         """
         #TODO: Add folder picker if no root folder is set
         #Check if the active image folder is set
-        if (self.rootFolderPath == ""):
+        if (config.rootFolderPath == ""):
             print("No root folder")
             self.pickRootFolder()
         else:
-            if (os.path.isdir(self.rootFolderPath)):
+            if (os.path.isdir(config.rootFolderPath)):
                 print("Root folder found")
                 return True
             else:
@@ -283,24 +250,17 @@ class NFCPictureFrame:
         """
         print("Changing active image folder")
         self.stopImageSlider()
-        self.setActiveImageFolderPath(activeImageFolderPath)
+        config.setActiveImageFolderPath(activeImageFolderPath)
         self.startImageSlider()
         self.root.after(3000,self.startNFCLoop)
 
-    def setActiveImageFolderPath(self,activeImageFolderPath):
-        """
-        A method to set the active image folder path
-        """
-        self.activeImageFolderPath = activeImageFolderPath
-        self.writeConfigFile()
-
     def checkActiveImageFolder(self):
-        if (self.activeImageFolderPath == ""):
+        if (config.activeImageFolderPath == ""):
             #If not set the first folder as active image folder
             print("No active image folder. The first folder will be used")
             self.pickFirstActiveFolder()
         else :
-            if (os.path.isdir(self.activeImageFolderPath)):
+            if (os.path.isdir(config.activeImageFolderPath)):
                 print("Active image folder found")
                 return True
             else:
@@ -308,7 +268,7 @@ class NFCPictureFrame:
                 self.pickFirstActiveFolder()
 
     def pickFirstActiveFolder(self):    
-        folders = os.listdir(self.rootFolderPath)
+        folders = os.listdir(config.rootFolderPath)
         for folder in folders:
             if(folder.startswith(".")):
                 folders.remove(folder)
@@ -316,8 +276,8 @@ class NFCPictureFrame:
             print("No folders found in root folder")
             self.closeWithError("No folders found in root folder")
         else :
-            self.setActiveImageFolderPath(self.rootFolderPath+"/"+folders[0])
-            self.writeConfigFile()
+            config.setActiveImageFolderPath(config.rootFolderPath+"/"+folders[0])
+
 
     def pickRootFolder(self):
         #TODO: Add a method to pick the root folder
@@ -325,8 +285,7 @@ class NFCPictureFrame:
         if filename == "":
             print("No folder selected")
             self.closeWithError("No folder selected")
-        self.rootFolderPath = filename
-        self.writeConfigFile()
+        config.setRootFolderPath(filename)
     
     
 
@@ -337,13 +296,13 @@ class NFCPictureFrame:
         """
         file_types = [".JPG","JPEG","PNG",".GIF",".MP4",".jpg",".jpeg",".png",".gif",".mp4",".MOV",".mov"]
         #TODO: Add if folder exist check. If not print error
-        for file in os.listdir(self.activeImageFolderPath):
+        for file in os.listdir(config.activeImageFolderPath):
             if file.endswith(tuple(file_types)):
                 print(file)
                 self.imageQueue.append(file)
         if(self.imageQueue.__len__() == 0):
-            print("No images found in folder:" + self.activeImageFolderPath)
-            self.closeWithError("No images found in folder" + self.activeImageFolderPath)
+            print("No images found in folder:" + config.activeImageFolderPath)
+            self.closeWithError("No images found in folder" + config.activeImageFolderPath)
             return
 
     def pickImage(self):
@@ -366,14 +325,13 @@ class NFCPictureFrame:
                     self.setInterruptImageSlider(True)
                     self.image_label.pack_forget() 
                     #self.root.after_cancel(self.playVideoAfterIds.pop)                  
-                    self.playVideoAfterIds = self.playVideo(self.activeImageFolderPath+"/"+pickedImage)
+                    self.playVideoAfterIds = self.playVideo(config.activeImageFolderPath+"/"+pickedImage)
                     return
                 else:
-                    self.showImage(self.activeImageFolderPath+"/"+pickedImage)
+                    self.showImage(config.activeImageFolderPath+"/"+pickedImage)
 
                 #Call this method again after imageTimer
                 #self.root.after_cancel(self.pickImageAfterIds.pop())
-                print("Imported config ImageTimer: " + str(config.imageTimer))
                 self.pickImageAfterIds.append(self.image_label.after(config.imageTimer*1000,self.pickImage))
             else: 
                 print("No more images to show. Restarting queue")
@@ -458,8 +416,8 @@ class NFCPictureFrame:
             nfcId,nfcText = self.readNFCID()
             if(nfcId != "" ):
                 newFolder = self.translateIDToFolderName(str(nfcId))
-                activeImageFolderPath = self.rootFolderPath+"/"+newFolder
-                if(activeImageFolderPath == self.activeImageFolderPath):
+                activeImageFolderPath = config.rootFolderPath+"/"+newFolder
+                if(activeImageFolderPath == config.activeImageFolderPath):
                     print("Same folder")
                     print("Starting NFC loop again")
                     time.sleep(5)
@@ -482,8 +440,8 @@ class NFCPictureFrame:
         """
         A method to translate the nfcID to a folder name
         """
-        if(nfcID in self.nfcIDDictinary):
-            return self.nfcIDDictinary[nfcID]
+        if(nfcID in config.nfcIDDictinary):
+            return config.nfcIDDictinary[nfcID]
         else:
             print("No folder name found for ID: " + nfcID)
             return nfcID
@@ -521,69 +479,8 @@ class NFCPictureFrame:
         A method to test the vlc video player
         """
         self.packVLCPlayer()
-        self.vlcMediaPlayer.playVideo(self.rootFolderPath+"/images/video.mp4")
+        self.vlcMediaPlayer.playVideo(config.rootFolderPath+"/images/video.mp4")
         
-    def writeConfigFile(self):
-        """
-        A method to write the config file
-        """
-        if not (self.configParser.has_section("Settings")):
-            self.configParser.add_section("Settings")
-        self.configParser.set("Settings","imageTimer",str(self.imageTimer))
-        self.configParser.set("Settings","rootFolderPath",self.rootFolderPath)
-        self.configParser.set("Settings","activeImageFolderPath",self.activeImageFolderPath)
-        with open('config.ini', 'w') as configfile:
-            self.configParser.write(configfile)
-    
-    def writeNfcIDDictionary(self):
-        """
-        A method to write the nfc id dictionary
-        """
-        if not (self.configParser.has_section("nfcIDDictionary")):
-            self.configParser.add_section("nfcIDDictionary")
-        for key in self.nfcIDDictinary:
-            self.configParser.set("nfcIDDictionary",key,self.nfcIDDictinary[key])
-        with open('config.ini', 'w') as configfile:
-            self.configParser.write(configfile)
-
-    def addNfcID(self,id,folderName):
-        """
-        A method to add a nfc id to the nfc id dictionary
-        """
-        if (self.nfcIDDictinary.__contains__(id)):
-            return "NFC ID already exists"
-        self.nfcIDDictinary[id] = folderName
-        self.writeNfcIDDictionary()
-        return "NFC Tag Added"
-
-    def removeNfcID(self,id):
-        """
-        A method to remove a nfc id from the nfc id dictionary
-        """
-        if(id in self.nfcIDDictinary):
-            self.nfcIDDictinary.pop(id)
-            self.writeNfcIDDictionary()
-        else:
-            return "NFC ID not found"
-        return "NFC Tag Removed"
-
-    def renameNfcID(self,id,newFolderName):
-        """
-        A method to rename a nfc id from the nfc id dictionary
-        """
-        if(id in self.nfcIDDictinary):
-            self.nfcIDDictinary[id] = newFolderName
-            self.writeNfcIDDictionary()
-        else:
-            print("ID not found")
-            return "NFC ID not found"
-        return "NFC Tag Renamed"
-
-    def getNfcIDDictionary(self):
-        """
-        A method to get the nfc id dictionary
-        """
-        return self.nfcIDDictinary
 
     def closeWithError(self,errorMessage):
         """ 
