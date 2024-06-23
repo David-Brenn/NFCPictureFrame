@@ -112,6 +112,47 @@ def run_flask_app(pipeConn):
         else:
             return "Failed to rename folder name for NFC ID", 500  # Return a 500 Internal Server Error response
 
+    #Add POST/GET  method to set/get image timer
+    @app.route('/image-timer', methods=['POST', 'GET'])
+    def imageTimer():
+        if request.method == 'GET':
+            return str(config.imageTimer)
+        if request.method == 'POST':
+            data = request.json  # Get JSON data from the request
+            timer = data.get('timer')
+            
+            if not timer:
+                return "Timer cannot be empty", 400  # Return a 400 Bad Request response
+            
+            # Assuming config.setImageTimer(timer) sets the image timer in your configuration
+            # and returns True if successful, False otherwise.
+            if config.setImageTimer(timer):
+                reloadConfig()
+                return f"Image timer set to {timer} successfully", 200
+            else:
+                return "Failed to set image timer", 500  # Return a 500 Internal Server Error response
+
+    @app.route('/rootImageFolder', methods=['POST', 'GET'])
+    def rootImageFolder():
+        if request.method == 'GET':
+            return config.rootFolderPath
+        if request.method == 'POST':
+            data = request.json  # Get JSON data from the request
+            rootImageFolder = data.get('rootImageFolder')
+            
+            if not rootImageFolder:
+                return "Root image folder cannot be empty", 400  # Return a 400 Bad Request response
+            
+            # Assuming config.setRootImageFolder(rootImageFolder) sets the root image folder in your configuration
+            # and returns True if successful, False otherwise.
+            if config.setRootFolderPath(rootImageFolder):
+                reloadConfig()
+                return f"Root image folder set to {rootImageFolder} successfully", 200
+            else:
+                return "Failed to set root image folder", 500  # Return a 500 Internal Server Error response
+
+
+
     app.run(host='0.0.0.0')
 
 
