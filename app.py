@@ -74,6 +74,43 @@ def run_flask_app(pipeConn):
             return f"NFC ID {nfcID} with folder name {folderName} added successfully", 200
         else:
             return "Failed to add NFC ID and folder name", 500  # Return a 500 Internal Server Error response
+        
+    #Add DELETE method to remove NFC ID
+    @app.route('/nfc/remove', methods=['DELETE'])
+    def removeNFCID():
+        data = request.json  # Get JSON data from the request
+        nfcID = data.get('nfcID')
+        
+        if not nfcID:
+            return "NFC ID cannot be empty", 400  # Return a 400 Bad Request response
+        
+        # Assuming config.removeNfcID(nfcID) removes the NFC ID from your configuration
+        # and returns True if successful, False otherwise.
+        if config.removeNfcID(nfcID):
+            reloadConfig()
+            return f"NFC ID {nfcID} removed successfully", 200
+        else:
+            return "Failed to remove NFC ID", 500  # Return a 500 Internal Server Error response
+        
+    #Add PUT method to rename NFC ID
+    @app.route('/nfc/rename', methods=['PUT'])
+    def renameNFCID():
+        data = request.json  # Get JSON data from the request
+        nfcID = data.get('nfcID')
+        newFolderName = data.get('newFolderName')
+        
+        if not nfcID:
+            return "NFC ID cannot be empty", 400  # Return a 400 Bad Request response
+        if not newFolderName:
+            return "New folder name cannot be empty", 400  # Return a 400 Bad Request response
+        
+        # Assuming config.renameNfcID(nfcID, newFolderName) renames the folder name associated with the NFC ID
+        # and returns True if successful, False otherwise.
+        if config.renameNfcID(nfcID, newFolderName):
+            reloadConfig()
+            return f"Folder name for NFC ID {nfcID} renamed to {newFolderName} successfully", 200
+        else:
+            return "Failed to rename folder name for NFC ID", 500  # Return a 500 Internal Server Error response
 
     app.run(host='0.0.0.0')
 
