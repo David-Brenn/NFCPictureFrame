@@ -75,9 +75,6 @@ class NFCPictureFrame:
         A method to init the NFCPictureFrame class. It calls all the setup methods and starts the image slider and the NFC reader.
         """
 
-        #Read config file
-        self.readConfigFile()
-
         self.vlcMediaPlayer = VlcVideoPlayer()
 
         #Setup tkinter 
