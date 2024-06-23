@@ -1,8 +1,9 @@
-from flask import Flask
+from flask import Flask, request
 from nfcPictureFrame import NFCPictureFrame
 from multiprocessing import Process, Pipe
 from commands import Command
-
+import configWrapper as config
+import json
 
 
 
@@ -39,6 +40,40 @@ def run_flask_app(pipeConn):
         else: 
             return "No response from Image Slider"
         return status
+    
+    @app.route('/reload-config')
+    def reloadConfig():
+        pipeConn.send(Command.RELOAD_CONFIG)
+        if pipeConn.poll(3):
+            status = pipeConn.recv()
+            return status
+        else: 
+            return "No response from Image Slider"
+        return status
+    
+    @app.route('/nfc')
+    def listNFCIDs():
+        return json.dumps(config.nfcIDDictinary)
+    
+    #Add POST method to add NFC ID
+    @app.route('/nfc/add', methods=['POST'])
+    def addNFCID():
+        data = request.json  # Get JSON data from the request
+        nfcID = data.get('nfcID')
+        folderName = data.get('folderName')
+        
+        if not nfcID:
+            return "NFC ID cannot be empty", 400  # Return a 400 Bad Request response
+        if not folderName:
+            return "Folder name cannot be empty", 400  # Return a 400 Bad Request response
+        
+        # Assuming config.addNfcID(nfcID, folderName) adds the NFC ID and folder name to your configuration
+        # and returns True if successful, False otherwise.
+        if config.addNfcID(nfcID, folderName):
+            reloadConfig()
+            return f"NFC ID {nfcID} with folder name {folderName} added successfully", 200
+        else:
+            return "Failed to add NFC ID and folder name", 500  # Return a 500 Internal Server Error response
 
     app.run(host='0.0.0.0')
 

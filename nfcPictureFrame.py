@@ -8,7 +8,6 @@ import time
 #from tkVideoPlayer import TkinterVideo
 from vlcVideoPlayer import VlcVideoPlayer
 import sys
-from configparser import ConfigParser
 import configWrapper as config
 from tkinter import messagebox
 from mfrc522 import SimpleMFRC522
@@ -66,9 +65,6 @@ class NFCPictureFrame:
 
     #Bool to interrupt the NFC reader
     interruptNFCReader = True
-
-
-    configParser = ConfigParser()
 
     def __init__(self,imageTimer,rootFolderPath,pipeConn):
         """
@@ -130,6 +126,13 @@ class NFCPictureFrame:
                         statusMessage += "NFC Frame: Stopped"
                     else:
                         statusMessage += "NFC Frame: Already Stopped"
+                    self.pipe_conn.send(statusMessage)
+                if(message == Command.RELOAD_CONFIG):
+                    statusMessage = ""
+                    self.stopImageSlider()
+                    config.readConfigFile()
+                    self.startImageSlider()
+                    statusMessage += "NFC Frame: Reloaded"
                     self.pipe_conn.send(statusMessage)
 
             time.sleep(1)
