@@ -41,6 +41,8 @@ class NFCPictureFrame:
     screen_height = 0
     screen_width = 0
 
+    is_Fullscreen = True
+
     #Queue of images to be shown
     imageQueue = []
     #Queue of images that have allready be shown
@@ -146,7 +148,7 @@ class NFCPictureFrame:
         self.root = tk.Tk()
         self.root.title("NFC Picture Frame")
         self.root.attributes("-fullscreen", True)
-        self.root.bind("<Escape>", self.exit_fullscreen)
+        self.root.bind("<Escape>", self.toggle_fullscreen)
         self.root.configure(highlightthickness=0,highlightcolor="black",borderwidth=0,background="black")
         self.screen_width = self.root.winfo_screenwidth()
         self.screen_height = self.root.winfo_screenheight()
@@ -340,8 +342,15 @@ class NFCPictureFrame:
                 #self.root.after_cancel(self.pickImageAfterIds.pop())
                 self.pickImageAfterIds.append(self.image_label.after(1,self.pickImage))
 
-    def exit_fullscreen(self,event):
-        self.root.attributes("-fullscreen", False)
+    def toggle_fullscreen(self,event):
+        if(self.is_Fullscreen):
+            self.root.attributes("-fullscreen", False)
+            self.is_Fullscreen = False
+        else:
+            self.root.attributes("-fullscreen", True)
+            self.is_Fullscreen = True
+
+
 
     def videoDurationFound(self,event):
         """
