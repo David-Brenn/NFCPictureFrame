@@ -33,9 +33,8 @@ def readConfigFile():
     nfcIDDictinary = {}
     if (configParser.has_section("nfcIDDictionary")):
         nfcIDDictinary = {key: value for key, value in configParser.items("nfcIDDictionary")}
-    return "Config file read"
+    return "Config file read"    
 
-    
 
 def initConfigFile():
     """
@@ -49,6 +48,47 @@ def initConfigFile():
     with open('config.ini', 'w') as configfile:
         configParser.write(configfile)
     return "Config file created"
+
+def setRootFolderPath(path):
+    """
+    A method to set the root folder path
+    """
+    global rootFolderPath
+    rootFolderPath = path
+    if not (configParser.has_section("Settings")):
+        configParser.add_section("Settings")
+    configParser.set("Settings","rootFolderPath",path)
+    with open('config.ini', 'w') as configfile:
+        configParser.write(configfile)
+    return "Root Folder Path set"
+
+
+def setActiveImageFolderPath(path):
+    """
+    A method to set the active image folder path
+    """
+    global activeImageFolderPath
+    activeImageFolderPath = path
+    if not (configParser.has_section("Settings")):
+        configParser.add_section("Settings")
+    configParser.set("Settings","activeImageFolderPath",path)
+    with open('config.ini', 'w') as configfile:
+        configParser.write(configfile)
+    return "Active Image Folder Path set"
+
+
+def setImageTimer(timer):
+    """
+    A method to set the image timer
+    """
+    global imageTimer
+    imageTimer = timer
+    if not (configParser.has_section("Settings")):
+        configParser.add_section("Settings")
+    configParser.set("Settings","imageTimer",str(timer))
+    with open('config.ini', 'w') as configfile:
+        configParser.write(configfile)
+    return "Image Timer set"
 
 
 def writeNfcIDDictionary():

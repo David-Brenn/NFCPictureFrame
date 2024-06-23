@@ -9,7 +9,7 @@ import time
 from vlcVideoPlayer import VlcVideoPlayer
 import sys
 from configparser import ConfigParser
-import configWrapper
+import configWrapper as config
 from tkinter import messagebox
 from mfrc522 import SimpleMFRC522
 import RPi.GPIO as GPIO
@@ -83,7 +83,6 @@ class NFCPictureFrame:
 
         #Read config file
         self.readConfigFile()
-
 
         self.vlcMediaPlayer = VlcVideoPlayer()
 
@@ -374,7 +373,8 @@ class NFCPictureFrame:
 
                 #Call this method again after imageTimer
                 #self.root.after_cancel(self.pickImageAfterIds.pop())
-                self.pickImageAfterIds.append(self.image_label.after(self.imageTimer*1000,self.pickImage))
+                print("Imported config ImageTimer: " + str(config.imageTimer))
+                self.pickImageAfterIds.append(self.image_label.after(config.imageTimer*1000,self.pickImage))
             else: 
                 print("No more images to show. Restarting queue")
                 self.imageQueue = self.allReadyShownImages
