@@ -132,7 +132,7 @@ def run_flask_app(pipeConn):
             else:
                 return "Failed to set image timer", 500  # Return a 500 Internal Server Error response
 
-    @app.route('/rootImageFolder', methods=['POST', 'GET'])
+    @app.route('/root-image-folder', methods=['POST', 'GET'])
     def rootImageFolder():
         if request.method == 'GET':
             return config.rootFolderPath

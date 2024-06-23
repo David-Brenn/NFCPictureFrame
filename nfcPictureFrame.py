@@ -151,6 +151,7 @@ class NFCPictureFrame:
         self.root = tk.Tk()
         self.root.title("NFC Picture Frame")
         self.root.attributes("-fullscreen", True)
+        self.root.config(cursor="none")
         self.root.bind("<Escape>", self.toggle_fullscreen)
         self.root.configure(highlightthickness=0,highlightcolor="black",borderwidth=0,background="black")
         self.screen_width = self.root.winfo_screenwidth()
@@ -347,9 +348,11 @@ class NFCPictureFrame:
     def toggle_fullscreen(self,event):
         if(self.is_Fullscreen):
             self.root.attributes("-fullscreen", False)
+            self.root.config(cursor="")
             self.is_Fullscreen = False
         else:
             self.root.attributes("-fullscreen", True)
+            self.root.config(cursor="none")
             self.is_Fullscreen = True
 
 
