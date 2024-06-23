@@ -315,7 +315,7 @@ class NFCPictureFrame:
         Picks a random image from the ImageQueue and set it to the image label
         If the image is a video it will be played
         """
-        if(self.interruptImageSlider or self.videoPlaying):
+        if(self.interruptImageSlider or self.vlcMediaPlayer.playingVideo):
             return
         else:
             if(self.imageQueue.__len__()!= 0):
@@ -327,7 +327,6 @@ class NFCPictureFrame:
                 self.allReadyShownImages.append(pickedImage)
                 if(pickedImage.endswith((".mp4",".MP4",".mov",".MOV"))):
                     #To show a video we need to stop the image slider and show the video
-                    self.videoPlaying = True
                     self.image_label.pack_forget() 
                     #self.root.after_cancel(self.playVideoAfterIds.pop)                  
                     self.playVideoAfterIds = self.playVideo(config.activeImageFolderPath+"/"+pickedImage)
@@ -416,7 +415,6 @@ class NFCPictureFrame:
         self.vlcMediaPlayer.stopVideo()
         self.unpackVLCPlayer()
         self.image_label.pack(expand=True)
-        self.videoPlaying = False
         self.image_label.after(1,self.pickImage)
         
 
