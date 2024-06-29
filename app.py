@@ -53,14 +53,18 @@ def run_flask_app(pipeConn):
     
     @app.route('/nfc')
     def listNFCIDs():
-        return json.dumps(config.nfcIDDictinary)
+        collections = []
+        #For each element in the dictionary create a json object that contains: nfcID and folderName
+        for key in config.nfcIDDictinary:
+            collections.append({"nfcID": key, "name": config.nfcIDDictinary[key]})
+        return json.dumps(collections)
     
     #Add POST method to add NFC ID
     @app.route('/nfc/add', methods=['POST'])
     def addNFCID():
         data = request.json  # Get JSON data from the request
         nfcID = data.get('nfcID')
-        folderName = data.get('folderName')
+        folderName = data.get('name')
         
         if not nfcID:
             return "NFC ID cannot be empty", 400  # Return a 400 Bad Request response
@@ -97,7 +101,7 @@ def run_flask_app(pipeConn):
     def renameNFCID():
         data = request.json  # Get JSON data from the request
         nfcID = data.get('nfcID')
-        newFolderName = data.get('newFolderName')
+        newFolderName = data.get('name')
         
         if not nfcID:
             return "NFC ID cannot be empty", 400  # Return a 400 Bad Request response
