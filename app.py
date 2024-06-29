@@ -13,43 +13,52 @@ def run_flask_app(pipeConn):
 
     @app.route('/')
     def applicationStatus():
+        statusObj = {
+        }
         pipeConn.send(Command.STATUS)
         if pipeConn.poll(3):
             status = pipeConn.recv()
-            return status
+            statusObj["status"] = status
+        
         else: 
-            return "No response from Image Slider"
-        return status
+            statusObj["status"] = "offline"
+        return json.dumps(statusObj)
     
     @app.route('/start')
     def startImageSlider():
+        statusObj = {
+        }
         pipeConn.send(Command.START)
         if pipeConn.poll(3):
             status = pipeConn.recv()
-            return status
+            statusObj["status"] = status
         else: 
-            return "No response from Image Slider"
-        return status
+            statusObj["status"] = "offline"
+        return json.dumps(statusObj)
     
     @app.route('/stop')
     def stopImageSlider():
+        statusObj = {
+        }
         pipeConn.send(Command.STOP)
         if pipeConn.poll(3):
             status = pipeConn.recv()
-            return status
+            statusObj["status"] = status
         else: 
-            return "No response from Image Slider"
-        return status
+            statusObj["status"] = "offline"
+        return json.dumps(statusObj)
     
     @app.route('/reload-config')
     def reloadConfig():
+        statusObj = {
+        }
         pipeConn.send(Command.RELOAD_CONFIG)
         if pipeConn.poll(3):
             status = pipeConn.recv()
-            return status
+            statusObj["status"] = status
         else: 
-            return "No response from Image Slider"
-        return status
+            statusObj["status"] = "offline"
+        return json.dumps(statusObj)
     
     @app.route('/nfc')
     def listNFCIDs():
