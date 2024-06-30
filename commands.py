@@ -5,3 +5,4 @@ class Command(Enum):
     START = "start"
     STOP = "stop"
     RELOAD_CONFIG = "reload-config"
+    SHUTDOWN = "shutdown"

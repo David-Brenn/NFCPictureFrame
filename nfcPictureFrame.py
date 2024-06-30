@@ -139,6 +139,11 @@ class NFCPictureFrame:
                     self.startImageSlider()
                     statusMessage += "reloaded"
                     self.pipe_conn.send(statusMessage)
+                if(message == Command.SHUTDOWN):
+                    self.stopImageSlider()
+                    self.stopNFCLoop()
+                    self.root.destroy()
+                    break
 
             time.sleep(1)
 
