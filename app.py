@@ -129,10 +129,13 @@ def run_flask_app(pipeConn):
     @app.route('/image-timer', methods=['POST', 'GET'])
     def imageTimer():
         if request.method == 'GET':
-            return str(config.imageTimer)
+            jsonObj = {
+                "imageTimer": config.imageTimer
+            }
+            return json.dumps(jsonObj)
         if request.method == 'POST':
             data = request.json  # Get JSON data from the request
-            timer = data.get('timer')
+            timer = data.get('imgaeTimer')
             
             if not timer:
                 return "Timer cannot be empty", 400  # Return a 400 Bad Request response
