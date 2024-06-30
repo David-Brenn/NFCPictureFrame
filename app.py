@@ -164,7 +164,7 @@ def run_flask_app(pipeConn):
             else:
                 return "Failed to set root image folder", 500  # Return a 500 Internal Server Error response
 
-    @app.route('/shotdown', methods=['GET'])
+    @app.route('/shutdown', methods=['GET'])
     def shutdownPictureFrame():
         statusObj = {
         }
